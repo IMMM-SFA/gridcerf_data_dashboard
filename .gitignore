@@ -1,3 +1,9 @@
+.DS_Store
+**/.vscode
+
+# The remainder of this file contains standard Python .gitignore content from
+#   Github.
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
