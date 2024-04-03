@@ -1,0 +1,59 @@
+/*CSS Across the App*/
+
+:root {
+    /* Color styles */
+    --space--blue: #1F244D;
+    --electric--blue: #0A8AD2;
+    --soft--grey: #F9F9F9;
+    --black: #000000;
+    --pnnl--orange: #F09326;
+    --pnnl--orange-img: invert(58%) sepia(13%) saturate(3207%) hue-rotate(0deg) brightness(100%) contrast(80%);
+    --pnnl--orange-img2: invert(38%) sepia(13%) saturate(3207%) hue-rotate(0deg) brightness(100%) contrast(80%);
+    --grey: #D9D9D9;
+    --white: #FFFFFF;
+    --hard--grey: #545454;
+
+    /* Text-size styles */
+    --font--footer: 16px;
+    --font--tag: 13px;
+    --font--name: 16px;
+    --font--title: 16px;
+    --font--namespace: 48px;
+    --font--number: 13px;
+
+}
+
+
+/* DISPLAY: FLEX put elements in a horizontal line */
+/* FLOAT: LEFT OR RIGHT where elements go in div */
+/*
+#table-container {
+    height: 750px;
+    width: 100%;
+    overflow: scroll, 
+    padding: 10px 10px 10px 20px;
+}
+
+#table {
+    overflowY: scroll;
+}*/
+
+#data_title {
+    background: #b84427;
+    color: white;
+}
+.metatext {
+    padding: 0px 0px 5px 15px;
+/*    margin-top: 14px;*/
+/*    text-align: center;*/
+    vertical-align: middle;
+
+}
+
+.horizonal-text {
+/*    display: inline-block;*/
+    display: flex;
+/*    background: blue;*/
+    padding: 0px 0px 0px 0px;
+
+}

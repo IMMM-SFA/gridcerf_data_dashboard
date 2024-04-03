@@ -1,0 +1,98 @@
+/*CSS Across the App*/
+
+:root {
+    /* Color styles */
+    --space--blue: #1F244D;
+    --electric--blue: #0A8AD2;
+    --soft--grey: #F9F9F9;
+    --black: #000000;
+    --pnnl--orange: #F09326;
+    --pnnl--orange-img: invert(58%) sepia(13%) saturate(3207%) hue-rotate(0deg) brightness(100%) contrast(80%);
+    --pnnl--orange-img2: invert(38%) sepia(13%) saturate(3207%) hue-rotate(0deg) brightness(100%) contrast(80%);
+    --grey: #D9D9D9;
+    --white: #FFFFFF;
+    --hard--grey: #545454;
+
+    /* Text-size styles */
+    --font--footer: 16px;
+    --font--tag: 13px;
+    --font--name: 16px;
+    --font--title: 16px;
+    --font--namespace: 48px;
+    --font--number: 13px;
+
+}
+
+
+/* DISPLAY: FLEX put elements in a horizontal line */
+/* FLOAT: LEFT OR RIGHT where elements go in div */
+
+#banner {
+    height: 50px;
+}
+
+.bannerbar {
+/*    height: 50px;*/
+    width: 100%;
+    background-color: var(--space--blue);
+    color: var(--soft--grey);
+    display: inline-block;
+    grid-area: header;
+}
+
+.bannerbar a { 
+  color: var(--soft--grey);
+  text-decoration: none;
+}
+
+.bannerbar a:hover { 
+    color: var(--pnnl--orange); 
+}
+
+#group-logo:hover, #lab-logo:hover {
+    filter: var(--pnnl--orange-img2);
+}
+
+#name-logo-container {
+    display: flex;
+}
+
+#app-name {
+    padding-left: 20px;
+    padding-right: 5px;
+    font-size: 40px;
+}
+
+#app-logo {
+    padding-bottom: 5px;
+    padding-top: 5px;
+    filter: var(--pnnl--orange-img);
+ }
+
+#group-logo, #lab-logo {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.bannerbar a:nth-child(1) {
+/*  background-color: red;*/
+  float: left;
+}
+.bannerbar a:nth-child(2) {
+/*  background-color: green;*/
+  float: right;
+}
+.bannerbar a:nth-child(3) {
+/*  background-color: green;*/
+  float: right;
+}
+
+.svg {
+    height: 50px;
+}
+.logo {
+    height: 50px;
+}
+
