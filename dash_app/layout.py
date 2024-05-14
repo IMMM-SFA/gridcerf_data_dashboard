@@ -20,6 +20,7 @@ import dash_bootstrap_components as dbc     # Adds bootstrap components for more
 # from dash_svg import Svg, G, Path, Circle # Scalable Vector Graphics (SVG) maker
 import dash_leaflet as dl
 from dash import dash_table
+from dash_resizable_panels import PanelGroup, Panel, PanelResizeHandle
 
 # sourced scripts
 sys.path.append("src")
@@ -107,17 +108,24 @@ title_text = """Geospatial Raster Input Data for Capacity Expansion Regional Fea
 description_text = """A high-resolution energy mapper for exploring the siting viability of renewable 
 					 and non-renewable power plants in the United States."""
 
-overview_text = """The United States will likely need new utility-scale generation resources given that the 
-				   growth of electricity demand cannot be subsided by energy efficiency initiatives alone. 
-				   Climate change, energy system transitions, and socioeconomic shifts are also driving 
-				   electricity demand and power plant siting."""
-overview_text_cont = """To explore where new power plants can be built, GRIDCERF visualizes location- and technology-specific 
+# overview_text = """The United States will likely need new utility-scale generation resources because rising
+# 				   electricity demand cannot be met by energy efficiency initiatives alone. 
+# 				   Climate change, energy system transitions, and socioeconomic shifts are also driving 
+# 				   electricity demand and power plant siting."""
+# overview_text_cont = """To explore where new power plants can be built, GRIDCERF geovisualizes technology-specific 
+# 				   data comprised of 264 suitability layers across 56 power plant technologies. The data are fully 
+# 				   compatible with integrated, multi-model approaches, so they can easily be re-ingested into 
+# 				   geospatial modeling software."""
+
+overview_text = """The United States will likely need new utility-scale generation resources because rising
+				   electricity demand cannot be met by energy efficiency initiatives alone. To explore 
+				   where new power plants can be built, GRIDCERF geovisualizes technology-specific 
 				   data comprised of 264 suitability layers across 56 power plant technologies. The data are fully 
 				   compatible with integrated, multi-model approaches, so they can easily be re-ingested into 
 				   geospatial modeling software."""
 
 author_text = """GRIDCERF represents the extensive collection of data formatting, processing, and visualization 
-				 created by the IM3 Group at the Pacific Northwest National Laboratory."""
+				 created by the IM3 Group.""" # at the Pacific Northwest National Laboratory."""
 
 funding_text = """This research was funded by the U.S. Department of Energy, Office of Science, as part of 
 				  research in MultiSector Dynamics, Earth and Environmental Systems Modeling Program."""
@@ -206,38 +214,38 @@ def metadata_card():
 
 def tabs_card():
 
-    information_tab = dcc.Tab(label="Information",
-		                         id=tabs[0],
-		                         value=tabs[0],
-		                         selected_className="active-tab",
-		                         children=[
-		                                   # html.Hr(className="tab-hr"),
-		                                   html.Div(id='intro', 
-                                                            children=[html.P(title_text, id='title', className="title-text"),
-                                                                      html.P(description_text, id='description-text', className="page-text"), 
-                                                                      html.P(section_headers[0], id='header0', className="header-text"),
-                                                                      html.Hr(className="hr"),
-                                                                      html.P(overview_text, id='overview-text', className="page-text"),
-                                                                      html.P(overview_text_cont, id='overview-text-cont', className="page-text"),
-                                                                      html.P(section_headers[1], id='header1', className="header-text"),
-                                                                      html.Hr(className="hr"),
-                                                                      html.P(author_text, id='author-text', className="page-text"), 
-                                                                      html.P(section_headers[2], id='header2', className="header-text"),
-                                                                      html.Hr(className="hr"),
-                                                                      html.P(funding_text, id='funding-text', className="page-text"),
-                                                                      # html.Label([html.P("Download the contributing", id="shorttext1"),
-                                                                      #               html.A('papers', href='https://gdr.openei.org/submissions/1473', id='hyperlink1'),
-                                                                      #               html.P("and", id="shorttext2"),
-                                                                      #               html.A('code', href='https://github.com/pnnl/GeoCLUSTER', id='hyperlink2'),
-                                                                      #               html.P(".", id="shorttext3"),
-                                                                      #               ], id='ab-note4')
-                                                    ]),
-		                                   html.Button("Get Started", id="launch-btn", className="button"),
-		                                   ]
-	                                   )
+    # information_tab = dcc.Tab(label="Information",
+	# 	                         id=tabs[0],
+	# 	                         value=tabs[0],
+	# 	                         selected_className="active-tab",
+	# 	                         children=[
+	# 	                                   # html.Hr(className="tab-hr"),
+	# 	                                   html.Div(id='intro', 
+    #                                                         children=[html.P(title_text, id='title', className="title-text"),
+    #                                                                   html.P(description_text, id='description-text', className="page-text"), 
+    #                                                                   html.P(section_headers[0], id='header0', className="header-text"),
+    #                                                                   html.Hr(className="hr"),
+    #                                                                   html.P(overview_text, id='overview-text', className="page-text"),
+    #                                                                   html.P(overview_text_cont, id='overview-text-cont', className="page-text"),
+    #                                                                   html.P(section_headers[1], id='header1', className="header-text"),
+    #                                                                   html.Hr(className="hr"),
+    #                                                                   html.P(author_text, id='author-text', className="page-text"), 
+    #                                                                   html.P(section_headers[2], id='header2', className="header-text"),
+    #                                                                   html.Hr(className="hr"),
+    #                                                                   html.P(funding_text, id='funding-text', className="page-text"),
+    #                                                                   # html.Label([html.P("Download the contributing", id="shorttext1"),
+    #                                                                   #               html.A('papers', href='https://gdr.openei.org/submissions/1473', id='hyperlink1'),
+    #                                                                   #               html.P("and", id="shorttext2"),
+    #                                                                   #               html.A('code', href='https://github.com/pnnl/GeoCLUSTER', id='hyperlink2'),
+    #                                                                   #               html.P(".", id="shorttext3"),
+    #                                                                   #               ], id='ab-note4')
+    #                                                 ]),
+	# 	                                   # html.Button("Get Started", id="launch-btn", className="button"),
+	# 	                                   ]
+	#                                    )
 
 
-    insights_tab = dcc.Tab(label="Insights",
+    insights_tab = dcc.Tab(label="Technology Suitability",
                          id=tabs[1],
                          value=tabs[1],
                          selected_className="active-tab",
@@ -276,6 +284,22 @@ def tabs_card():
 									# can also make year a slider from 2025 - 2100 with 5 year increments, 
 									# OR make it an animation
 									
+									html.Div(id="tech-select-container",
+                         					 className="select-container",
+                         					 children=[
+	                         					html.P(select_headers[3], id='select-header3', className="dropdown-header-text"),
+			                                    dcc.Dropdown(
+			                                    	id="tech-select",
+			                                    	className="dropdown-select",
+			                                    	options=list(all_options.keys()), # where the chain starts **
+			                                    	value="Biomass",
+			                                    	clearable=False,
+			                                    	searchable=False,
+			                                    	multi=False
+			                                    	),
+                         					 ]
+                         					 ),
+
 									html.Div(id="year-select-container",
                          					 className="select-container",
                          					 children=[
@@ -309,24 +333,6 @@ def tabs_card():
                          					 ]
                          					 ),
 
-                                    
-                                    html.Div(id="tech-select-container",
-                         					 className="select-container",
-                         					 children=[
-	                         					html.P(select_headers[3], id='select-header3', className="dropdown-header-text"),
-			                                    dcc.Dropdown(
-			                                    	id="tech-select",
-			                                    	className="dropdown-select",
-			                                    	options=list(all_options.keys()), # where the chain starts **
-			                                    	value="Biomass",
-			                                    	clearable=False,
-			                                    	searchable=False,
-			                                    	multi=False
-			                                    	),
-                         					 ]
-                         					 ),
-
-                                    
                                     html.Div(id="subtech-select-container",
                          					 className="select-container",
                          					 children=[
@@ -408,7 +414,7 @@ def tabs_card():
                          ]
                          )
 
-    layers_tab = dcc.Tab(label="Layers",
+    layers_tab = dcc.Tab(label="Layer Catalogue",
 						   id=tabs[2],
 						   value=tabs[2],
 						   selected_className="active-tab",
@@ -421,7 +427,7 @@ def tabs_card():
 
     tabnav = dcc.Tabs(id="tabnav", 
                     value=tabs[1], 
-                    children=[information_tab,
+                    children=[#information_tab,
                               insights_tab,
                               layers_tab
                               ])
@@ -451,14 +457,14 @@ def banner_card():
 	 						  			),
 	 						  ]
 	 				),
-				html.A(
-	 				href="https://www.pnnl.gov/",
-	 				target="_blank",
-	 				children=[
-	 						  html.Img(id="lab-logo", className="logo", alt="lab logo",
-	 						  		   src=app.get_asset_url("icons/logos_icons/pnnl_abbreviated_logo.png")),
-	 						  ]
-	 					),
+				# html.A(
+	 			# 	href="https://www.pnnl.gov/",
+	 			# 	target="_blank",
+	 			# 	children=[
+	 			# 			  html.Img(id="lab-logo", className="logo", alt="lab logo",
+	 			# 			  		   src=app.get_asset_url("icons/logos_icons/pnnl_abbreviated_logo.png")),
+	 			# 			  ]
+	 			# 		),
 
 				html.A(
 	 				href="https://im3.pnnl.gov/",
@@ -556,6 +562,47 @@ def map():
 		)
 
 
+def about():
+
+	return html.Div(
+					id="about",
+					className="about-column",
+					children=[
+
+					html.Div(id='intro', 
+                            children=[html.P(title_text, id='title', className="title-text"),
+                                      html.P(description_text, id='description-text', className="page-text"), 
+                                      html.P(section_headers[0], id='header0', className="header-text"),
+                                      html.Hr(className="hr"),
+                                      html.P(overview_text, id='overview-text', className="page-text"),
+                                      # html.P(overview_text_cont, id='overview-text-cont', className="page-text"),
+                                      html.P(section_headers[1], id='header1', className="header-text"),
+                                      html.Hr(className="hr"),
+                                      html.P(author_text, id='author-text', className="page-text"), 
+                                      html.P(section_headers[2], id='header2', className="header-text"),
+                                      html.Hr(className="hr"),
+                                      html.P(funding_text, id='funding-text', className="page-text"),
+                                      # html.Label([html.P("Download the contributing", id="shorttext1"),
+                                      #               html.A('papers', href='https://gdr.openei.org/submissions/1473', id='hyperlink1'),
+                                      #               html.P("and", id="shorttext2"),
+                                      #               html.A('code', href='https://github.com/pnnl/GeoCLUSTER', id='hyperlink2'),
+                                      #               html.P(".", id="shorttext3"),
+                                      #               ], id='ab-note4')
+                    ]),
+
+
+					# html.Div(
+					#     [
+					#         html.H2("Sidebar", className="display-4"),
+					#         html.Hr(),
+					#         html.P(
+					#             "A simple sidebar layout with navigation links", className="lead"
+					#         ),
+					#     ])
+
+					]
+		)
+
 def nav():
 
 	return html.Div(
@@ -573,15 +620,47 @@ def page_card():
 			id="page-body",
 			className="page",
 			children=[
-					   map(),
-				# 	   html.Div(
-				# 			id="map",
-				# 			className="map-column",
-				# 			children=[
-				# 					  html.Div(id="energy-map2")
-				# 			]
-				# ),
 
+				# html.Div([
+				#     PanelGroup(
+				#         id='panel-group',
+				#         children=[
+				#             Panel(
+				#                 id='panel-1',
+				#                 children=[
+				#                     about(),
+				#                 ],
+				#             ),
+				#             PanelResizeHandle(
+				#             	html.Div(
+				#             		style={"backgroundColor": "grey", "height": "100%", "width": "5px"})
+				#             	),
+				#             Panel(
+				#                 id='panel-2',
+				#                 children=[
+				#                     map()
+				#                 ],
+				#                 # style={"backgroundColor": "black", "color": "white"}
+				#             ),
+				#             PanelResizeHandle(
+				#             	html.Div(
+				#             		style={"backgroundColor": "grey", "height": "100%", "width": "5px"})
+				#             	),
+				#             Panel(
+				#                 id='panel-3',
+				#                 children=[
+				#                     nav()
+				#                 ],
+				#                 # style={"backgroundColor": "black", "color": "white"}
+				#             )
+				#         ], direction='horizontal'
+				#     )
+				# ], style={"height": "100vh"})
+
+
+
+					   about(),
+					   map(),
 					   nav(),
 					]
 				)
