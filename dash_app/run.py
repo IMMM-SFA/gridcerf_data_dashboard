@@ -12,5 +12,6 @@ from app import app
 
 if __name__ == "__main__":
 	
+	# app = create_app()
 	port = int(os.environ.get("PORT", 8060))
 	app.run_server(port=port, debug=True)

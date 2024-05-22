@@ -1,0 +1,83 @@
+technology,subtype,is_carbon_capture_sequestration,cooling_type,fname,subtype_shortname,cooling_type_shortname
+Biomass,Conventional,CCS,Dry,gridcerf_biomass_conventional_ccs_dry.tif,Conventional,D
+Biomass,Conventional,CCS,Once-through,gridcerf_biomass_conventional_ccs_oncethrough.tif,Conventional,OT
+Biomass,Conventional,CCS,Recirculating,gridcerf_biomass_conventional_ccs_recirculating.tif,Conventional,R
+Biomass,Conventional,CCS,Recirculating-Seawater,,Conventional,R-S
+Biomass,Conventional,No-CCS,Dry,gridcerf_biomass_conventional_no-ccs_dry.tif,Conventional,D
+Biomass,Conventional,No-CCS,Once-through,gridcerf_biomass_conventional_no-ccs_oncethrough.tif,Conventional,OT
+Biomass,Conventional,No-CCS,Recirculating,gridcerf_biomass_conventional_no-ccs_recirculating.tif,Conventional,R
+Biomass,Conventional,No-CCS,Recirculating-Seawater,,Conventional,R-S
+Biomass,Conventional,No-CCS,Pond,gridcerf_biomass_conventional_no-ccs_pond.tif,Conventional,P
+Biomass,Integrated Gasification Combined Cycle,CCS,Dry,gridcerf_biomass_igcc_with-ccs_dry.tif,IGCC,D
+Biomass,Integrated Gasification Combined Cycle,CCS,Once-through,gridcerf_biomass_igcc_with-ccs_oncethrough.tif,IGCC,OT
+Biomass,Integrated Gasification Combined Cycle,CCS,Recirculating,gridcerf_biomass_igcc_with-ccs_recirculating.tif,IGCC,R
+Biomass,Integrated Gasification Combined Cycle,CCS,Recirculating-Seawater,,IGCC,R-S
+Biomass,Integrated Gasification Combined Cycle,No-CCS,Dry,gridcerf_biomass_igcc_no-ccs_dry.tif,IGCC,D
+Biomass,Integrated Gasification Combined Cycle,No-CCS,Once-through,gridcerf_biomass_igcc_no-ccs_oncethrough.tif,IGCC,OT
+Biomass,Integrated Gasification Combined Cycle,No-CCS,Recirculating,gridcerf_biomass_igcc_no-ccs_recirculating.tif,IGCC,R
+Biomass,Integrated Gasification Combined Cycle,No-CCS,Recirculating-Seawater,,IGCC,R-S
+Coal,Conventional,CCS,Dry,gridcerf_coal_conventional_ccs_dry.tif,Conventional,D
+Coal,Conventional,CCS,Once-through,gridcerf_coal_conventional_ccs_oncethrough.tif,Conventional,OT
+Coal,Conventional,CCS,Recirculating,gridcerf_coal_conventional_ccs_recirculating.tif,Conventional,R
+Coal,Conventional,CCS,Recirculating-Seawater,,Conventional,R-S
+Coal,Conventional,No-CCS,Dry,gridcerf_coal_conventional_no-ccs_dry.tif,Conventional,D
+Coal,Conventional,No-CCS,Once-through,gridcerf_coal_conventional_no-ccs_oncethrough.tif,Conventional,OT
+Coal,Conventional,No-CCS,Recirculating,gridcerf_coal_conventional_no-ccs_recirculating.tif,Conventional,R
+Coal,Conventional,No-CCS,Recirculating-Seawater,,Conventional,R-S
+Coal,Conventional,No-CCS,Pond,gridcerf_coal_conventional_no-ccs_pond.tif,Conventional,P
+Coal,Integrated Gasification Combined Cycle,CCS,Dry,gridcerf_coal_igcc_with-ccs_dry.tif,IGCC,D
+Coal,Integrated Gasification Combined Cycle,CCS,Once-through,gridcerf_coal_igcc_with-ccs_oncethrough.tif,IGCC,OT
+Coal,Integrated Gasification Combined Cycle,CCS,Recirculating,gridcerf_coal_igcc_with-ccs_recirculating.tif,IGCC,R
+Coal,Integrated Gasification Combined Cycle,CCS,Recirculating-Seawater,,IGCC,R-S
+Coal,Integrated Gasification Combined Cycle,No-CCS,Dry,gridcerf_coal_igcc_no-ccs_dry.tif,IGCC,D
+Coal,Integrated Gasification Combined Cycle,No-CCS,Once-through,gridcerf_coal_igcc_no-ccs_oncethrough.tif,IGCC,OT
+Coal,Integrated Gasification Combined Cycle,No-CCS,Recirculating,gridcerf_coal_igcc_no-ccs_recirculating.tif,IGCC,R
+Coal,Integrated Gasification Combined Cycle,No-CCS,Recirculating-Seawater,,IGCC,R-S
+Geothermal,,,Centralized Enhanced Dry-Hybrid,,,CE D-H
+Geothermal,,,Centralized Enhanced Recirculating,,,CE R
+Natural Gas,Combined Cycle,CCS,Dry,gridcerf_gas_cc_ccs_dry.tif,CC,D
+Natural Gas,Combined Cycle,CCS,Once-through,gridcerf_gas_cc_ccs_oncethrough.tif,CC,OT
+Natural Gas,Combined Cycle,CCS,Recirculating,gridcerf_gas_cc_ccs_recirculating.tif,CC,R
+Natural Gas,Combined Cycle,CCS,Recirculating-Seawater,,CC,R-S
+Natural Gas,Combined Cycle,No-CCS,Dry,gridcerf_gas_cc_no-ccs_dry.tif,CC,D
+Natural Gas,Combined Cycle,No-CCS,Once-through,gridcerf_gas_cc_no-ccs_oncethrough.tif,CC,OT
+Natural Gas,Combined Cycle,No-CCS,Recirculating,gridcerf_gas_cc_no-ccs_recirculating.tif,CC,R
+Natural Gas,Combined Cycle,No-CCS,Recirculating-Seawater,,CC,R-S
+Natural Gas,Combined Cycle,No-CCS,Pond,gridcerf_gas_cc_no-ccs_pond.tif,CC,P
+Natural Gas,Combustion Turbine,No-CCS,Dry,gridcerf_gas_turbine_dry.tif,CT,D
+Natural Gas,Combustion Turbine,No-CCS,Once-through,gridcerf_gas_turbine_oncethrough.tif,CT,OT
+Natural Gas,Combustion Turbine,No-CCS,Recirculating,gridcerf_gas_turbine_recirculating.tif,CT,R
+Natural Gas,Combustion Turbine,No-CCS,Pond,gridcerf_gas_turbine_pond.tif,CT,P
+Nuclear,Gen 3 AP1000,,Once-through,gridcerf_nuclear_gen3_oncethrough.tif,Gen 3 AP1000,OT
+Nuclear,Gen 3 AP1000,,Recirculating,gridcerf_nuclear_gen3_recirculating.tif,Gen 3 AP1000,R
+Nuclear,Gen 3 AP1000,,Recirculating-Seawater,,Gen 3 AP1000,R-S
+Nuclear,Gen 3 AP1000,,Pond,gridcerf_nuclear_gen3_pond.tif,Gen 3 AP1000,P
+Nuclear,Gen 3 Small Modular Reactor,,Once-through,,Gen 3,OT
+Nuclear,Gen 3 Small Modular Reactor,,Pond,,Gen 3,P
+Nuclear,Gen 3 Small Modular Reactor,,Recirculating,,Gen 3,R
+Nuclear,Gen 3 Small Modular Reactor,,Recirculating-Seawater,,Gen 3,R-S
+Nuclear,Gen 2 Light Water Reactor,,Once-through,,Gen 2,OT
+Nuclear,Gen 2 Light Water Reactor,,Pond,,Gen 2,P
+Nuclear,Gen 2 Light Water Reactor,,Recirculating,,Gen 2,R
+Nuclear,Gen 2 Light Water Reactor,,Recirculating-Seawater,,Gen 2,R-S
+Refined Liquids,Combined Cycle,CCS,Once-through,gridcerf_refinedliquids_cc_ccs_oncethrough.tif,CC,OT
+Refined Liquids,Combined Cycle,CCS,Dry,gridcerf_refinedliquids_cc_ccs_dry.tif,CC,D
+Refined Liquids,Combined Cycle,CCS,Recirculating,gridcerf_refinedliquids_cc_ccs_recirculating.tif,CC,R
+Refined Liquids,Combined Cycle,CCS,Recirculating-Seawater,,CC,R-S
+Refined Liquids,Combined Cycle,No-CCS,Once-through,gridcerf_refinedliquids_cc_no-ccs_oncethrough.tif,CC,OT
+Refined Liquids,Combined Cycle,No-CCS,Dry,gridcerf_refinedliquids_cc_no-ccs_dry.tif,CC,D
+Refined Liquids,Combined Cycle,No-CCS,Recirculating,gridcerf_refinedliquids_cc_no-ccs_recirculating.tif,CC,R
+Refined Liquids,Combined Cycle,No-CCS,Recirculating-Seawater,,CC,R-S
+Refined Liquids,Combustion Turbine,No-CCS,Dry,gridcerf_refinedliquids_ct_dry.tif,CT,D
+Refined Liquids,Combustion Turbine,No-CCS,Once-through,gridcerf_refinedliquids_ct_oncethrough.tif,CT,OT
+Refined Liquids,Combustion Turbine,No-CCS,Recirculating,gridcerf_refinedliquids_ct_recirculating.tif,CT,R
+Refined Liquids,Combustion Turbine,No-CCS,Pond,gridcerf_refinedliquids_ct_pond.tif,CT,P
+Solar,Concentrating Solar Power,,Centralized Enhanced Dry-Hybrid,gridcerf_solar_csp_centralized_dry-hybrid.tif,CSP,CE D-H
+Solar,Concentrating Solar Power,,Centralized Enhanced Recirculating,gridcerf_solar_csp_centralized_recirculating.tif,CSP,CE R
+Solar,Photovoltaic,,,gridcerf_solar_pv_centralized.tif,PV,
+Wind,"Onshore, 80 m",,,gridcerf_wind_onshore_hubheight080m.tif,"Onshore, 80 m",
+Wind,"Onshore, 110 m",,,gridcerf_wind_onshore_hubheight110m.tif,"Onshore, 110 m",
+Wind,"Onshore, 140 m",,,gridcerf_wind_onshore_hubheight140m.tif,"Onshore, 140 m",
+Wind,"Offshore, 100 m",,,,Offshore,
+Wind,"Offshore, 140 m",,,,Offshore,
+Wind,"Offshore, 160 m",,,,Offshore,
