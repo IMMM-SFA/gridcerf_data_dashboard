@@ -180,3 +180,8 @@ sys.path.insert(0, "/var/www/<path>/dash_app")
 ```
 
 Finally, for errors regarding file requests, especially due to arguments like `url_base_pathname` or `requests_pathname_prefix` when initiating the Dash application in `app.py`, please refer to the `dash.Dash()` documentation is located online on the [Dash API Reference page](https://dash.plotly.com/reference).
+
+### Deploying as AWS lambda
+When pushing to the dev branch there is a github action that will build a new image using the Dockerfile, publish that image to ECR, and then update the lambda function to use the new image. The URLs to the lambda apps are:
+1. dev: https://gridcerf.dev.msdlive.org/
+2. prod: https://gridcerf.msdlive.org/

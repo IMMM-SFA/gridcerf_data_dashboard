@@ -17,7 +17,6 @@ import pandas as pd
 import xarray as xr
 
 # visualization and data manipulation
-import rasterio
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
@@ -31,22 +30,81 @@ from holoviews.plotting.plotly.dash import to_dash
 from dash.dependencies import Input, Output, State
 from dash import ctx
 from dash.exceptions import PreventUpdate
+from dash import dcc
+import dash_leaflet as dl
+
+# MSD-LIVE added imports:
+from msdlive_utils import get_bytes
+from io import BytesIO
+
+# MSD-LIVE added dataset id that goes to DEV
+DATASET_ID = "1ffea-emt93"
 
 # sourced scripts
+sys.path.append("src")
+from utilities import open_as_raster
 from layout import app, tech_pathways_df, src_meta, all_options, OUTDIR, COMPILED_DIR
 
-# functions
+# app = create_app()
 
-def open_as_raster(TIFPATH):
+from dash import Dash, html
+import holoviews as hv
+from holoviews.plotting.plotly.dash import to_dash
+from holoviews.operation.datashader import datashade
+import pandas as pd
+import numpy as np
+from plotly.data import carshare
+from plotly.colors import sequential
+import pandas as pd
+import numpy as np
 
-	with rasterio.open(TIFPATH) as src: 
-		array = src.read(1)
-		crs = src.crs
-		metadata = src.meta
-		array_nodata = np.where(array == src.nodata, np.nan, 0)
-		array = np.where(array==1, np.nan, array)
+import holoviews as hv
+from holoviews.operation.datashader import datashade
+from holoviews.plotting.plotly.dash import to_dash
 
-	return array
+hv.extension("plotly")
+
+plotly_config = {'displaylogo': False,
+                'modeBarButtonsToRemove': ['autoScale', 'resetScale'], # High-level: zoom, pan, select, zoomIn, zoomOut, autoScale, resetScale
+                'toImageButtonOptions': {
+                    'format': 'png', # one of png, svg, jpeg, webp
+                    'filename': 'custom_image',
+                    'height': None,
+                    'width': None,
+                    'scale': 6 # Multiply title/legend/axis/canvas sizes by this factor
+                        }
+                  }
+
+
+def generate_data():
+    data = np.random.random((1000000, 2))
+
+    return pd.DataFrame(data, columns=["x", "y"])
+
+
+def create_datashaded_scatterplot(df):
+    dataset = hv.Dataset(df)
+    scatter = datashade(
+        hv.Scatter(dataset, kdims=["x"], vdims=["y"])
+    ).opts(width=800, height=800)
+
+    return scatter
+
+
+def update_plot(df):
+    scatter = create_datashaded_scatterplot(df)
+    components = to_dash(app, [scatter])
+    return components.children
+
+
+# @app.callback(
+#     Output("plot-div", "children"),
+#     Input("update-data-button", "n_clicks"),
+#     prevent_initial_call=True
+# )
+# def update_plot_callback(n_clicks):
+#     df = generate_data()
+#     return update_plot(df)
 
 # -----------------------------------------------------------------------------
 # Define dash app plotting callbacks.
@@ -174,7 +232,7 @@ def show_hide_element(feature, is_ccs, cooling, capacity_factor):
 
 
 @app.callback(
-    Output(component_id="energy-map", component_property="figure"),
+    Output(component_id="map", component_property="children"),
     [
 	Input(component_id="map-select", component_property="value"),
 	# Input(component_id="state-select", component_property="value"),
@@ -221,7 +279,7 @@ def map(maptool, #state,
 
 		TIFPATH = os.path.join(COMPILED_DIR, fpath)
 		print(TIFPATH)
-		array = open_as_raster(TIFPATH=TIFPATH)
+		data_array, array, metadata = open_as_raster(TIFPATH=TIFPATH) # save metadata['crs'] and metadata['']
 		i += 1
 		print(array)
 
@@ -240,7 +298,14 @@ def map(maptool, #state,
 		print("IMSHOW PLOTTED")
 		print("\n\n")
 
-	if maptool == "Plotly-datashader and RAPIDS": # holoviews & RAPIDS ... somewhat go together
+		fig_div = html.Div(id="plotly-map", 
+						   children=[dcc.Graph(id="energy-map", figure=fig, config=plotly_config)]
+						   )
+
+	if maptool == "Plotly-datashader, holoviews": 
+
+		# to use RAPIDS ... need to install drivers, but have no GPUs on Mac
+
 		ylat = np.arange(0, array.shape[0], 1).tolist()
 		xlon = np.arange(0, array.shape[1], 1).tolist()
 		
@@ -256,10 +321,27 @@ def map(maptool, #state,
 		print("HOLOVIEWS PLOTTED")
 		print("\n\n")
 
-	if maptool == "Leaflet and TiTiler":
-		print("test")
+		# scatter = create_datashaded_scatterplot(df)
+		components = to_dash(app, [fig])
 
-	return fig
+		fig_div = html.Div(id="plotly-map", 
+						   children=components
+						   )
+
+
+
+	if maptool == "Leaflet and TiTiler":
+		
+		fig_div = html.Div(id="plotly-map", 
+						   children=[dl.Map(dl.TileLayer(), center=[56,10], zoom=6, style={'height': '80vh'})]
+						   )
+
+		print("Leaflet and TiTiler")
+
+		
+
+
+	return fig_div
 
 
 @app.callback(
