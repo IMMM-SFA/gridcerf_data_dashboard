@@ -41,8 +41,7 @@ from io import BytesIO
 DATASET_ID = "1ffea-emt93"
 
 # sourced scripts
-sys.path.append("src")
-from utilities import open_as_raster
+from src.utilities import open_as_raster
 from layout import app, tech_pathways_df, src_meta, all_options, OUTDIR, COMPILED_DIR
 
 # app = create_app()

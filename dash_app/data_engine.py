@@ -3,9 +3,8 @@
 
 import sys
 
-sys.path.append("src")
-from dir2yaml import make_yaml_dir
-from yaml2csv import create_tech_pathways_csv
+from src.dir2yaml import make_yaml_dir
+from src.yaml2csv import create_tech_pathways_csv
 
 
 if __name__ == "__main__":
