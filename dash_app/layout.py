@@ -33,8 +33,7 @@ DATASET_ID = "1ffea-emt93"
 
 
 # sourced scripts
-sys.path.append("src")
-from utilities import recur_dictify
+from src.utilities import recur_dictify
 
 # MSD-LIVE added logic to support app running locally and in lambda:
 LAMBDA_TASK_ROOT = os.getenv('LAMBDA_TASK_ROOT')
