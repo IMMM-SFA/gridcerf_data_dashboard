@@ -289,7 +289,7 @@ def create_app(): #-> Dash:
 				                                        id="map-select",
 				                                        className="dropdown-select",
 				                                        options=["Plotly-imshow", "Plotly-datashader, holoviews", "Leaflet and TiTiler"],
-				                                        value="Leaflet and TiTiler",
+				                                        value="Plotly-imshow",
 				                                        clearable=False,
 				                                        searchable=False,
 				                                        multi=False
