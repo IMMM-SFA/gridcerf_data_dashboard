@@ -99,7 +99,7 @@ footer {
 }
 
 .map-column {
-    flex-grow: 1;
+    flex-grow: 5;
 /*    border: 1px solid red;*/
 /*    resize: horizontal;*/
     overflow: auto;
@@ -107,10 +107,10 @@ footer {
 
 .nav-column {
     background-color: var(--soft--grey);
-    flex-grow: 5;
+    /* flex-grow: 5; */
     padding-left: 15px;
     padding-right: 15px;
-    width: 400px;
+    width: 350px;
     overflow-y: scroll;
 /*    border: 1px solid red;*/
 }
@@ -201,7 +201,7 @@ footer {
 }
 
 #about {
-    width: 400px;
+    width: 310px;
     overflow-y: scroll;
     background-color: var(--soft--grey);
 }

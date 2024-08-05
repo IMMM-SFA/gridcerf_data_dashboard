@@ -13,41 +13,46 @@ import sys
 import pandas as pd
 
 # web app and interactive graphics libraries 
+from flask import Flask
+from flask_compress import Compress
 import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc     # Adds bootstrap components for more web themes and templates
-# import dash_daq as daq                    # Adds more data acquisition (DAQ) and controls to dash callbacks 
-# from dash_svg import Svg, G, Path, Circle # Scalable Vector Graphics (SVG) maker
 import dash_leaflet as dl
 from dash import dash_table
 from dash_resizable_panels import PanelGroup, Panel, PanelResizeHandle
 
-# MSD-LIVE added imports:
-# from msdlive_utils import get_bytes
-# from io import BytesIO
-from flask import Flask
-from flask_compress import Compress
-
-# MSD-LIVE added dataset id that goes to DEV
-DATASET_ID = "1ffea-emt93"
+# sourced scripts
+from src.utilities import recur_dictify
+from definitions import CONNECT_TO_LAMBDA
+# if CONNECT_TO_LAMBDA:
+# 	from flask import Flask
+# 	from flask_compress import Compress
 
 
 # sourced scripts
 from src.utilities import recur_dictify
 
-# MSD-LIVE added logic to support app running locally and in lambda:
-LAMBDA_TASK_ROOT = os.getenv('LAMBDA_TASK_ROOT')
-# If 'LAMBDA_TASK_ROOT' is not set, METADATA_DIR will be './metadata'
-# If 'LAMBDA_TASK_ROOT' is set, METADATA_DIR will be the absolute path
-METADATA_DIR = './metadata' if LAMBDA_TASK_ROOT is None else os.path.join(LAMBDA_TASK_ROOT, "dash_app", "metadata")
-
 # client (browser) paths
 REQUESETS_PATHNAME_PREFIX = "/"
 
-# file paths and global variables
-# DATA_DIR = "../../data/msdlive-gridcerf"
-DATA_DIR = ""
-# METADATA_DIR = os.path.join(DATA_DIR, "metadata")
+if CONNECT_TO_LAMBDA:
+
+	DATA_DIR = ""
+	# MSD-LIVE added logic to support app running locally and in lambda:
+	LAMBDA_TASK_ROOT = os.getenv('LAMBDA_TASK_ROOT')
+	# If 'LAMBDA_TASK_ROOT' is not set, METADATA_DIR will be './metadata'
+	# If 'LAMBDA_TASK_ROOT' is set, METADATA_DIR will be the absolute path
+	METADATA_DIR = './metadata' if LAMBDA_TASK_ROOT is None else os.path.join(LAMBDA_TASK_ROOT, "dash_app", "metadata")
+	# client (browser) paths
+
+else:
+	
+	# file paths and global variables
+	DATA_DIR = "../../data/msdlive-gridcerf"
+	METADATA_DIR = os.path.join(DATA_DIR, "metadata")
+
+
 COMPILED_DIR = os.path.join(DATA_DIR, "gridcerf/compiled/compiled_technology_layers")
 OUTDIR = "tmp"
 
@@ -73,12 +78,32 @@ def create_app(): #-> Dash:
 	Compress(server)
 
 
-	app = dash.Dash(__name__, assets_folder="assets", 
-					# Bootstrap stylesheets available on the web: https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/
-					# Link to a stylesheet served over a content delivery network (CDN)
-					# BOOTSTRAP links to the standard Bootstrap stylesheet
+	if CONNECT_TO_LAMBDA:
+		app = dash.Dash(__name__, assets_folder="assets", 
+						# Bootstrap stylesheets available on the web: https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/
+						# Link to a stylesheet served over a content delivery network (CDN)
+						# BOOTSTRAP links to the standard Bootstrap stylesheet
+		                external_stylesheets=[dbc.themes.BOOTSTRAP], 
+		                # url_base_pathname=URL_BASE_PATHNAME, # not needed
+		                requests_pathname_prefix=REQUESETS_PATHNAME_PREFIX,
+		                meta_tags=[
+		                		   {"charset": "UTF-8"},
+		                           {"http-equiv": "X-UA-Compatible", "content": "IE=9"},
+		                		   {"name": "viewport", "content": "width=device-width, initial-scale=1"},
+		                           {"name": "description", "content": "Geospatial Raster Input Data for Capacity Expansion Regional Feasibility (GRIDCERF). A high-resolution energy mapper."}
+		                        ],
+
+						# MSD-LIVE compressing the response via flask-compress, can do both locally and for lambda
+						# MSD-LIVE add logic to set serve_locally to support lambda
+						# You must set serve_locally=False or the app will not work when deployed remotely			 
+						serve_locally = False if LAMBDA_TASK_ROOT is not None else True,
+						server=server
+							)
+
+	else:
+
+		app = dash.Dash(__name__, assets_folder="assets",
 	                external_stylesheets=[dbc.themes.BOOTSTRAP], 
-	                # url_base_pathname=URL_BASE_PATHNAME, # not needed
 	                requests_pathname_prefix=REQUESETS_PATHNAME_PREFIX,
 	                meta_tags=[
 	                		   {"charset": "UTF-8"},
@@ -86,17 +111,10 @@ def create_app(): #-> Dash:
 	                		   {"name": "viewport", "content": "width=device-width, initial-scale=1"},
 	                           {"name": "description", "content": "Geospatial Raster Input Data for Capacity Expansion Regional Feasibility (GRIDCERF). A high-resolution energy mapper."}
 	                        ],
-
-					# MSD-LIVE compressing the response via flask-compress, can do both locally and for lambda
-					# MSD-LIVE add logic to set serve_locally to support lambda
-					# You must set serve_locally=False or the app will not work when deployed remotely			 
-					serve_locally = False if LAMBDA_TASK_ROOT is not None else True,
-					server=server
 						)
 
 
 	app.title = "GRIDCERF | Geospatial Raster Input Data for Capacity Expansion Regional Feasibility"
-
 
 
 	plotly_config = {'displaylogo': False,
@@ -287,8 +305,8 @@ def create_app(): #-> Dash:
 													dcc.Dropdown(
 				                                        id="map-select",
 				                                        className="dropdown-select",
-				                                        options=["Plotly-imshow", "Plotly-datashader, holoviews", "Leaflet and TiTiler"],
-				                                        value="Plotly-imshow",
+				                                        options=["Plotly-imshow", "Plotly-datashader, holoviews", "Leaflet and TiTiler", "Mapbox"],
+				                                        value="Leaflet and TiTiler", # "Mapbox", # "Plotly-imshow",
 				                                        clearable=False,
 				                                        searchable=False,
 				                                        multi=False
