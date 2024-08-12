@@ -112,7 +112,29 @@ def create_app(): #-> Dash:
 	                           {"name": "description", "content": "Geospatial Raster Input Data for Capacity Expansion Regional Feasibility (GRIDCERF). A high-resolution energy mapper."}
 	                        ],
 						)
-
+		
+	
+	app.index_string = '''
+	<!DOCTYPE html>
+	<html>
+		<head>
+			{%metas%}
+			{%css%}
+			<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+			<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+			<script src="https://unpkg.com/proj4@2.7.2/dist/proj4.js"></script>
+			<script src="https://unpkg.com/proj4leaflet@1.0.1/dist/proj4leaflet.js"></script>
+			<script src="/assets/custom_crs.js"></script>
+		</head>
+		<body>
+			{%app_entry%}
+			{%config%}
+			{%scripts%}
+			{%renderer%}
+		</body>
+	</html>
+	'''
+	# print("did it work?")
 
 	app.title = "GRIDCERF | Geospatial Raster Input Data for Capacity Expansion Regional Feasibility"
 
@@ -306,7 +328,7 @@ def create_app(): #-> Dash:
 				                                        id="map-select",
 				                                        className="dropdown-select",
 				                                        options=["Plotly-imshow", "Plotly-datashader, holoviews", "Leaflet and TiTiler", "Mapbox"],
-				                                        value="Leaflet and TiTiler", # "Mapbox", # "Plotly-imshow",
+				                                        value="Plotly-datashader, holoviews", # "Mapbox", # "Plotly-imshow",
 				                                        clearable=False,
 				                                        searchable=False,
 				                                        multi=False

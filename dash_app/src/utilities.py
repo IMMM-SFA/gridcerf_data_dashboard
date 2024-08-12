@@ -4,18 +4,6 @@
 # data manipulation
 import numpy as np
 import pandas as pd
-import rasterio
-import rioxarray
-import xarray as xr
-from pyproj import Transformer
-from pyproj import CRS
-
-# sourced scripts
-from definitions import CONNECT_TO_LAMBDA
-if CONNECT_TO_LAMBDA:
-    from definitions import DATASET_ID
-    from msdlive_utils import get_bytes
-    from io import BytesIO
 
 def print_full(df):
 
@@ -41,6 +29,37 @@ def recur_dictify(df):
 
     return d
 
+def create_datashaded_scatterplot(df):
+
+    dataset = hv.Dataset(df)
+    scatter = datashade(
+        hv.Scatter(dataset, kdims=["x"], vdims=["y"])
+    ).opts(width=800, height=800)
+
+    return scatter
+
+
+def update_plot(df):
+    
+    scatter = create_datashaded_scatterplot(df)
+    components = to_dash(app, [scatter])
+
+    return components.children
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # if CONNECT_TO_LAMBDA:
 
@@ -64,88 +83,41 @@ def recur_dictify(df):
 
 
 # else:
-    
-def open_as_raster(TIFPATH):
-
-    """This should work with any file that rasterio can open 
-    (most often: geoTIFF). The x and y coordinates are generated 
-    automatically from the file’s geoinformation, shifted to the 
-    center of each pixel (see “PixelIsArea” Raster Space for more 
-    information)."""
-
-    TIF_source = "Local"
-    TIF_stream = TIFPATH
-
-    if CONNECT_TO_LAMBDA:
-
-        TIF_source = "S3"
-        TIF_content = get_bytes(DATASET_ID, TIFPATH)  # reading the retrieved file from the S3 bucket  
-        TIF_stream = BytesIO(TIF_content) # wrap the file content in a BytesIO object for use like a file
-
-    # use rioxarray to get lat and long of 
-    og_proj_array = rioxarray.open_rasterio(TIF_stream, masked=True) # returns xarray.DataArray
-    data_2d = og_proj_array.isel(band=0).values
-    og_lons = og_proj_array.x
-    og_lats = og_proj_array.y
-    data_df = pd.DataFrame(data_2d, columns=og_proj_array.x, index=og_proj_array.y) 
-    print(data_df)
-
-    # TODO
-    # just need to reproject the row and column names ... !!!!!!!!!!!!!
-    # and then need to pivot the data so it's value | lat | lon
 
 
 
-    # the BELOW reprojects EVERYTHING EVEN THE CELLS ...
-    # proj_4326_array = og_proj_array.rio.reproject("EPSG:4326")
-    # proj_lons = proj_4326_array.x #np.array(proj_4326_array.x)
-    # proj_lats = proj_4326_array.y # np.array(proj_4326_array.y)
-    # data_2d = proj_4326_array.isel(band=0).values
-    # data_df = pd.DataFrame(data_2d, columns=proj_lons, index=proj_lats) 
-
-    # data_df = pd.DataFrame(array, columns=data_array.x, index=data_array.y) 
-
-
-    with rasterio.open(TIF_stream) as src: # returns rasterio.DatasetReader
+# def rasterio_open():
+   
+#     with rasterio.open(TIF_stream) as src: # returns rasterio.DatasetReader
         
-        array = src.read(1)
-        metadata = src.meta
+#         array = src.read(1)
+#         metadata = src.meta
 
-        # orginal projected coordinates (albers_conic_crs) to geographic coordinates (geo_crs)
-        conic_crs = src.crs # Albers Equal Area Conic CRS (ESRI:102003)
-        geo_crs = CRS("EPSG:4326")  # WGS84 (aka.  Albers Equal)
-        pyproj_crs = CRS(conic_crs.to_proj4())
-        proj_units = pyproj_crs.axis_info[0].unit_name
-        transform = src.transform # affine transform from map pixel coors to geo coors
-        transformer = Transformer.from_crs(conic_crs, geo_crs, always_xy=True)
-        print("\tCRS: ", conic_crs)
-        print("\tProjection Units: ", proj_units)
-        print("\n")
+#         # orginal projected coordinates (albers_conic_crs) to geographic coordinates (geo_crs)
+#         # conic_crs = src.crs # Albers Equal Area Conic CRS (ESRI:102003)
+#         geo_crs = CRS("EPSG:4326")  # WGS84 (aka.  Albers Equal)
+#         pyproj_crs = CRS(source_crs.to_proj4())
+#         proj_units = pyproj_crs.axis_info[0].unit_name
+#         transform = src.transform # affine transform from map pixel coors to geo coors
+#         transformer = Transformer.from_crs(source_crs, geo_crs, always_xy=True)
+#         print("\tCRS: ", source_crs)
+#         print("\tProjection Units: ", proj_units)
+#         print("\n")
 
         
-        albers_lon, albers_lat = src.xy(2654, 2891) # row value, column value
-        geo_lon, geo_lat = transformer.transform(albers_lon, albers_lat)
-        coors = [geo_lat, geo_lon]
+#         albers_lon, albers_lat = src.xy(2654, 2891) # row value, column value
+#         geo_lon, geo_lat = transformer.transform(albers_lon, albers_lat)
+#         coors = [geo_lat, geo_lon]
         
-        cols, rows = np.meshgrid(np.arange(src.width), np.arange(src.height)) 
-        xs, ys = rasterio.transform.xy(transform, rows, cols)
-        # print(xs)
-        # print(transform)
-        # print(crs)
-        # print(f"LONGITUDE: {lon} \tLATITUDE: {lat}")
-        # lon_transformed, lat_transformed = transformer.transform(lon, lat)
-        array_nodata = np.where(array == src.nodata, np.nan, 0)
-        array = np.where(array==1, np.nan, array)
-
-
-    print(f"{TIF_source}: {TIF_stream}\n")
-    # print(data_df)
-    # print(data_array)
-
-    return data_df, array, metadata
-
-
-
+#         cols, rows = np.meshgrid(np.arange(src.width), np.arange(src.height)) 
+#         xs, ys = rasterio.transform.xy(transform, rows, cols)
+#         # print(xs)
+#         # print(transform)
+#         # print(crs)
+#         # print(f"LONGITUDE: {lon} \tLATITUDE: {lat}")
+#         # lon_transformed, lat_transformed = transformer.transform(lon, lat)
+#         array_nodata = np.where(array == src.nodata, np.nan, 0)
+#         array = np.where(array==1, np.nan, array)
 
 
     # def get_map_data():
@@ -214,21 +186,40 @@ def open_as_raster(TIFPATH):
 
     #     return geo_data
 
-def create_datashaded_scatterplot(df):
-
-    dataset = hv.Dataset(df)
-    scatter = datashade(
-        hv.Scatter(dataset, kdims=["x"], vdims=["y"])
-    ).opts(width=800, height=800)
-
-    return scatter
 
 
 
-def update_plot(df):
-    
-    scatter = create_datashaded_scatterplot(df)
-    components = to_dash(app, [scatter])
 
-    return components.children
 
+
+
+		# def tif_to_png(tif_path):
+		# 	with rasterio.open(tif_path) as src:
+		# 		array = src.read(1)  # read the first (and only) band
+		# 		array = np.interp(array, (array.min(), array.max()), (0, 255)) #  255 is white and 0 is black
+		# 		img = Image.fromarray(array.astype(np.uint8)).resize((src.width, src.height))
+
+		# 		# print(src)
+		# 		print(src.bounds)
+		# 		# metadata = src.meta # dict_keys(['driver', 'dtype', 'nodata', 'width', 'height', 'count', 'crs', 'transform'])
+		# 		# print(metadata['transform']) 
+		# 		# print('\n')
+		# 		# print(metadata['crs'])
+		# 		# crs = src.crs
+		# 		# print()
+		# 		# lat_max = src.latitude.values.max()
+		# 		# lat_min = src.latitude.values.min()
+		# 		# lon_max = src.longitude.values.max()
+		# 		# lon_min = src.longitude.values.min()
+				
+		# 		# print(lat_max, lat_min, lon_max, lon_min)
+		# 		return img, src.bounds, [src.width, src.height], [-171.791110603, 18.91619, -66.96466, 71.3577635769]
+
+		# # TIFPATH = os.path.join(COMPILED_DIR, fpath)
+		# # print(TIFPATH)
+		# # data_array, array, metadata = open_as_raster(TIFPATH=TIFPATH) 
+
+		# PNG, bounds, width_height, bbox = tif_to_png(tif_path=TIFPATH)
+		
+		# # PNG = array
+		# print(array.shape)

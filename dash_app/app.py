@@ -24,6 +24,9 @@ from PIL import Image
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
+import datashader as ds
+import geopandas as gpd
+import shapely.geometry
 
 # web app and interactive graphics libraries 
 from dash.dependencies import Input, Output, State
@@ -41,7 +44,8 @@ if CONNECT_TO_LAMBDA:
 	from io import BytesIO
 
 # sourced scripts
-from src.utilities import open_as_raster, create_datashaded_scatterplot #, get_map_data
+from src.reader import open_as_raster
+from src.utilities import create_datashaded_scatterplot #, get_map_data
 from layout import app, tech_pathways_df, src_meta, all_options, OUTDIR, COMPILED_DIR
 
 # app = create_app()
@@ -223,30 +227,33 @@ def map(maptool, #state,
 									   ui_capacity_factor in @capacity_factor")
 
 	fpaths = query_df["fpath"].values
+	# print(len(fpaths))
 
-	i = 0
-	for fpath in fpaths:
+	# i = 0
+	# for fpath in fpaths:
 
-		TIFPATH = os.path.join(COMPILED_DIR, fpath)
-		data_array, array, metadata = open_as_raster(TIFPATH=TIFPATH) # save metadata['crs'] and metadata['']
-		i += 1
-		# print(array)
+	# 	TIFPATH = os.path.join(COMPILED_DIR, fpath)
+	# 	data_array, array, source_crs, df_coors_long, boundingbox, img = open_as_raster(TIFPATH=TIFPATH, is_reproject=False, is_convert_to_png=False)
+	# 	i += 1
 
 	if maptool == "Plotly-datashader, holoviews": 
 
+		TIFPATH = os.path.join(COMPILED_DIR, fpaths[0])
+		data_df, array, source_crs, df_coors_long, boundingbox, boundingbox_proj, img = open_as_raster(TIFPATH=TIFPATH, is_reproject=False, is_convert_to_png=False)
+
 		# to use RAPIDS ... need to install drivers, but have no GPUs on Mac
 
-		ylat = np.arange(0, array.shape[0], 1).tolist()
-		xlon = np.arange(0, array.shape[1], 1).tolist()
+		# ylat = np.arange(0, array.shape[0], 1).tolist()
+		# xlon = np.arange(0, array.shape[1], 1).tolist()
 		
-		data_xr = xr.DataArray(array, 
-			coords={'y': ylat,'x': xlon}, 
-		dims=["y", "x"])
-		df = data_xr.to_dataframe(name='value').reset_index()
-		print(df)
+		# data_xr = xr.DataArray(array, 
+		# 	coords={'y': ylat,'x': xlon}, 
+		# dims=["y", "x"])
+		# df = data_xr.to_dataframe(name='value').reset_index()
+		# print(df)
 
 		# test
-		fig = dftest.hvplot.scatter(x='bill_length_mm', y='bill_depth_mm', by='species')
+		fig = df_coors_long.hvplot.scatter(x='LongitudeProj', y='LatitudeProj', by='IsFeasible')
 		# fig = df.hvplot(x="x", y="y", kind='scatter', rasterize=True)
 		print("HOLOVIEWS PLOTTED")
 		print("\n\n")
@@ -260,50 +267,28 @@ def map(maptool, #state,
 
 
 	if maptool == "Leaflet and TiTiler":
-		
-		def tif_to_png(tif_path):
-			with rasterio.open(tif_path) as src:
-				array = src.read(1)  # read the first (and only) band
-				array = np.interp(array, (array.min(), array.max()), (0, 255)) #  255 is white and 0 is black
-				img = Image.fromarray(array.astype(np.uint8)).resize((src.width, src.height))
 
-				# print(src)
-				print(src.bounds)
-				# metadata = src.meta # dict_keys(['driver', 'dtype', 'nodata', 'width', 'height', 'count', 'crs', 'transform'])
-				# print(metadata['transform']) 
-				# print('\n')
-				# print(metadata['crs'])
-				# crs = src.crs
-				# print()
-				# lat_max = src.latitude.values.max()
-				# lat_min = src.latitude.values.min()
-				# lon_max = src.longitude.values.max()
-				# lon_min = src.longitude.values.min()
-				
-				# print(lat_max, lat_min, lon_max, lon_min)
-				return img, src.bounds, [src.width, src.height], [-171.791110603, 18.91619, -66.96466, 71.3577635769]
-
-		# TIFPATH = os.path.join(COMPILED_DIR, fpath)
-		# print(TIFPATH)
-		# data_array, array, metadata = open_as_raster(TIFPATH=TIFPATH) 
-
-		PNG, bounds, width_height, bbox = tif_to_png(tif_path=TIFPATH)
-		
-		# PNG = array
-		print(array.shape)
-				
 		""" 
 		Convert Raster to Web-Compatible Format:
+			Leaflet does not directly support .TIF files, so you’ll need to convert your .TIF file to a format that Leaflet can display, 
+			like PNG or JPEG. You can use a tool like rasterio to handle this conversion.
+		
+		Create a Web Tile Layer: 
+			Convert the raster data into tiles (e.g., using Mapbox or a tile server).
+			Set Up Your Dash App:
+		
+		Create a Dash app with Dash Leaflet to display the map and raster tiles.
+		
+		"""
+		USA_CENTER = [39.8283, -98.5795]
 
-Leaflet does not directly support .TIF files, so you’ll need to convert your .TIF file to a format that Leaflet can display, like PNG or JPEG. You can use a tool like rasterio to handle this conversion.
-Create a Web Tile Layer:
+		TIFPATH = os.path.join(COMPILED_DIR, fpaths[0])
+		data_df, array, source_crs, geo_crs, df_coors_long, bounds, PNG = open_as_raster(TIFPATH=TIFPATH, is_reproject=False, is_convert_to_png=True)
 
-Convert the raster data into tiles (e.g., using Mapbox or a tile server).
-Set Up Your Dash App:
-
-Create a Dash app with Dash Leaflet to display the map and raster tiles.
-
-"""
+		# TODO: 
+		# see if can change CRS of the basemap (experiment with different basemap options)
+		# see if can plot the df_coors_long as an alternative with leaflet where you set the size of the point.
+		
 		# dlx.dicts_to_geojson(geo_data)
 
 		# ## Map Update 
@@ -316,71 +301,61 @@ Create a Dash app with Dash Leaflet to display the map and raster tiles.
 		# 	geo_data = reduce(lambda x, y: x + y, geo_data)
 		# else: geo_data=[]
 
-
-		# Paths.
-		GEOTIFF_DIR = "data"
-		DATA_DIR = "data"
-		DRIVER_PATH = "data/db.sqlite"
-		# Server config.
-		TC_PORT = 5000
-		TC_HOST = "localhost"
-		TC_URL = f"http://{TC_HOST}:{TC_PORT}"
-		# Data stuff.
-		GFS_YEAR, GFS_MONTH, GFS_DAY, GFS_HOUR, GFS_FCST_HOUR = "2020", "01", "01", "000", "0000"
-		GFS_KEY = f"gfs_4_{GFS_YEAR}{GFS_MONTH}{GFS_DAY}_{GFS_FCST_HOUR}_{GFS_HOUR}"
-		PARAMS = ["wspd", "temp"]
-		PARAMS_GFS = ["VGRD:100 m above ground", "UGRD:100 m above ground", "TMP:2 m above ground"]
-		PARAM_MAPPINGS = dict(
-		wspd=lambda ds: (ds['UGRD_100maboveground'][:][0]**2 + ds['VGRD_100maboveground'][:][0]**2)**0.5,
-		temp=lambda ds: ds['TMP_2maboveground'][:][0]
-		)
-
-		cmaps = ["Viridis", "Spectral", "Greys"]
-		lbl_map = dict(wspd="Wind speed", temp="Temperature")
-		unit_map = dict(wspd="m/s", temp="°K")
-		srng_map = dict(wspd=[0, 10], temp=[250, 300])
-		param0 = "temp"
-		cmap0 = "Viridis"
-		srng0 = srng_map[param0]
-
+		# MAP CONTROLLER (I.E., LEGEND)
+		# cmaps = ["Viridis", "Spectral", "Greys"]
+		# lbl_map = dict(wspd="Wind speed", temp="Temperature")
+		# unit_map = dict(wspd="m/s", temp="°K")
+		# srng_map = dict(wspd=[0, 10], temp=[250, 300])
+		# param0 = "temp"
+		# cmap0 = "Viridis"
+		# srng0 = srng_map[param0]
 
 		fig_div = html.Div(children=[
-    # Create the map itself.
-    dl.Map(id="map", center=[39.8283, -98.5795], zoom=4, children=[
-        dl.TileLayer(),
-        # dl.TileLayer(id="tc", opacity=0.5),
-		# WMSTileLayer
-		# dl.WMSTileLayer(url="https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi",
-        #             layers="nexrad-n0r-900913", format="image/png", transparent=True),
-		dl.ImageOverlay(url=PNG, opacity=0.5, bounds=[[24.9493, -125.00165], [49.59037, -66.93457]]
-		#tileSize=912 #width_height
-		#  bounds={"getEast": -66.945392, "getNorth": 49.382808, "getSouth": 24.521208, "getWest": -124.736342}
-		), #bounds [bounds[0], bounds[1], bounds[2], bounds[3]]
-		# url=TIFPATH
-        # dl.Colorbar(id="cbar", width=150, height=20, style={"margin-left": "40px"}, position="bottomleft"),
-    ], style={"width": "100%", "height": "100%"}
-	),
-    # Create controller.
-    # html.Div(children=[
-    #     html.Div("Parameter"),
-    #     dcc.Dropdown(id="dd_param", options=[dict(value=p, label=lbl_map[p]) for p in PARAMS], value=param0),
-    #     html.Br(),
-    #     html.Div("Colorscale"),
-    #     dcc.Dropdown(id="dd_cmap", options=[dict(value=c, label=c) for c in cmaps], value=cmap0),
-    #     html.Br(),
-    #     html.Div("Opacity"),
-    #     dcc.Slider(id="opacity", min=0, max=1, value=0.5, step=0.1, marks={0: "0", 0.5: "0.5", 1: "1"}),
-    #     html.Br(),
-    #     html.Div("Stretch range"),
-    #     dcc.RangeSlider(id="srng", min=srng0[0], max=srng0[1], value=srng0,
-    #                     marks={v: "{:.1f}".format(v) for v in srng0}),
-    #     html.Br(),
-    #     html.Div("Value @ click position"),
-    #     html.P(children="-", id="label"),
-    # ], 
-	# className="info")
+					# Create the map itself.
+					dl.Map(id="map",
+						   center=USA_CENTER, 
+						   zoom=4, 
+						   style={"width": "100%", "height": "100%"},
+						#    crs=str(geo_crs).replace(":", ""),
+						   children=[
+								# dl.TileLayer(),
+								dl.TileLayer(
+									id="tile-layer",
+									url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+									# https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}
+									attribution='Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+									# opacity=0.5
+									),
+								dl.ImageOverlay(url=PNG, opacity=0.5, bounds=bounds), #tileSize=912 #width_height
+								# WMSTileLayer
+								# dl.WMSTileLayer(url="https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi",
+								#             layers="nexrad-n0r-900913", format="image/png", transparent=True),
+								# dl.Colorbar(id="cbar", width=150, height=20, style={"margin-left": "40px"}, position="bottomleft"),
+					]),
+					# Create controller.
+					# html.Div(children=[
+					#     html.Div("Parameter"),
+					#     dcc.Dropdown(id="dd_param", options=[dict(value=p, label=lbl_map[p]) for p in PARAMS], value=param0),
+					#     html.Br(),
+					#     html.Div("Colorscale"),
+					#     dcc.Dropdown(id="dd_cmap", options=[dict(value=c, label=c) for c in cmaps], value=cmap0),
+					#     html.Br(),
+					#     html.Div("Opacity"),
+					#     dcc.Slider(id="opacity", min=0, max=1, value=0.5, step=0.1, marks={0: "0", 0.5: "0.5", 1: "1"}),
+					#     html.Br(),
+					#     html.Div("Stretch range"),
+					#     dcc.RangeSlider(id="srng", min=srng0[0], max=srng0[1], value=srng0,
+					#                     marks={v: "{:.1f}".format(v) for v in srng0}),
+					#     html.Br(),
+					#     html.Div("Value @ click position"),
+					#     html.P(children="-", id="label"),
+					# ], 
+					# className="info")
 
-], style={"display": "grid", "width": "100%", "height": "100vh"})
+			], 
+			
+			style={"display": "grid", "width": "100%", "height": "100vh"}
+		)
 
 		# fig_div = html.Div(id="plotly-map", 
 		# 				   children=[dl.Map(
@@ -429,7 +404,99 @@ Create a Dash app with Dash Leaflet to display the map and raster tiles.
 
 
 	if maptool == "Mapbox":
-		
+
+		# NOT GOING TO WORK
+
+		TIFPATH = os.path.join(COMPILED_DIR, fpaths[0])
+		data_df, array, source_crs, geo_crs, df_coors_long, boundingbox, img = open_as_raster(TIFPATH=TIFPATH, is_reproject=True, is_convert_to_png=False)
+
+		fig = px.scatter_mapbox(filtered_zero, lat="LatitudeProj", lon="LongitudeProj", hover_name="IsFeasible", #hover_data=["State", "Population"],
+							size="IsFeasible",
+							size_max=1,  # This sets the maximum size of points
+							# size_max_scale=10,  # Controls how much the size scales relative to size_max
+							color_discrete_sequence=["fuchsia"], 
+							zoom=3, 
+							# height=300
+							)
+		fig.update_layout(mapbox_style="open-street-map") # Allowed values which do not require a token are 'open-street-map', 'white-bg', 'carto- positron', 'carto-darkmatter'. 
+		fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+		fig.update_traces(marker=dict(size=4))
+
+		# fig = px.density_mapbox(
+		# 			filtered_zero,
+		# 			lat="LatitudeProj",
+		# 			lon="LongitudeProj",
+		# 			z="IsFeasible",
+		# 			radius=1,
+		# 			zoom=3,
+		# 			# color_continuous_scale=["#121212", "#121212"],
+		# 			# opacity=0.9
+		# 			# mapbox_style="open-street-map"
+		# 		)
+		# 		# fig = go.Figure(go.Scattermapbox())
+		# # fig.update_layout(
+		# # 			mapbox_layers=[
+		# # 				{
+		# # 					# "below": "traces",
+		# # 					"circle": {"radius": 3},
+		# # 					"color":"red",
+		# # 					"minzoom": 6,
+		# # 					"source": gpd.GeoSeries(
+		# # 						filtered_zero.loc[:, ["LongitudeProj", "LatitudeProj"]].apply(
+		# # 							shapely.geometry.Point, axis=1
+		# # 						)
+		# # 					).__geo_interface__,
+		# # 				},
+		# # 			],
+		# # 			mapbox_style="carto-positron",
+		# # 		)
+		# fig.update_layout(
+		# 			mapbox_layers=[
+		# 				{
+		# 					# "below": "traces",
+		# 					"circle": {"radius": 10},
+		# 					"color":"red",
+		# 					"minzoom": 10,
+		# 					"source": gpd.GeoSeries(
+		# 						filtered_zero.loc[:, ["LongitudeProj", "LatitudeProj"]].apply(
+		# 							shapely.geometry.Point, axis=1
+		# 						)
+		# 					).__geo_interface__,
+		# 				},
+		# 			],
+		# 			mapbox_style="open-street-map",
+		# 		)
+
+		# Create a scatter mapbox plot
+		# fig = go.Figure(go.Scattermapbox(
+		# 	lat=filtered_zero['LatitudeProj'],
+		# 	lon=filtered_zero['LongitudeProj'],
+		# 	mode='markers',
+		# 	marker=dict(
+			
+		# 		size=3,  # Fixed size for all points
+		# 		color=filtered_zero['IsFeasible'],  # Optional: Color by a value
+		# 		colorscale='Viridis',  # Optional: Color scale
+		# 		# symbol="circle",
+		# 		showscale=True  # Optional: Show color scale
+		# 	),
+		# 	# text=filtered_zero['IsFeasible'],  # Optional: Tooltip text
+		# ))
+
+		# # Update layout with Mapbox style
+		# fig.update_layout(
+		# 	mapbox=dict(
+		# 		style='carto-positron',  # Choose a Mapbox style
+		# 		# center=dict(lat=41, lon=-75),  # Center map on your data
+		# 		# zoom=10  # Initial zoom level
+		# 	),
+		# 	# title='Map with Fixed Point Size'
+		# )
+
+		fig_div = html.Div(id="plotly-map", 
+						   children=[dcc.Graph(id="energy-map", figure=fig, config=plotly_config)]
+						   )
+
 		# fig.update_layout(mapbox_style="open-street-map")
 
 		# df = px.data.gapminder().query("year == 2007")
@@ -494,40 +561,40 @@ Create a Dash app with Dash Leaflet to display the map and raster tiles.
 
 
 		# Convert to Plotly-compatible format
-		img_trace = px.imshow(data_array)
+		# img_trace = px.imshow(data_array)
 
-		# Create map with base layer and raster overlay
-		fig = px.scatter_mapbox(
-			lat=[37.7749],
-			lon=[-95.7129],
-			color_discrete_sequence=['blue'],
-			zoom=4,
-			mapbox_style='open-street-map'
-		)
+		# # Create map with base layer and raster overlay
+		# fig = px.scatter_mapbox(
+		# 	lat=[37.7749],
+		# 	lon=[-95.7129],
+		# 	color_discrete_sequence=['blue'],
+		# 	zoom=4,
+		# 	mapbox_style='open-street-map'
+		# )
 
-		print(img_trace.data[0])
-		fig.add_trace(img_trace.data[0])
+		# print(img_trace.data[0])
+		# fig.add_trace(img_trace.data[0])
 
-		fig.update_layout(
-			title='Raster Overlay on Map',
-			mapbox=dict(
-				style='open-street-map',
-				center=dict(lat=37.7749, lon=-95.7129),
-				zoom=4
-			)
-		)
+		# fig.update_layout(
+		# 	title='Raster Overlay on Map',
+		# 	mapbox=dict(
+		# 		style='open-street-map',
+		# 		center=dict(lat=37.7749, lon=-95.7129),
+		# 		zoom=4
+		# 	)
+		# )
 
-		fig_div = html.Div(id="plotly-map", 
-						   children=[dcc.Graph(id="energy-map", figure=fig, config=plotly_config)]
-						   )
+		# fig_div = html.Div(id="plotly-map", 
+		# 				   children=[dcc.Graph(id="energy-map", figure=fig, config=plotly_config)]
+		# 				   )
 
 		print("Mapbox")
 
 
 	if maptool == "Plotly-imshow":
-		
-		# This is custom and NOT spatially driven ... what makes this technology non spatial?
-		# v.s. other spatial technology?
+
+		TIFPATH = os.path.join(COMPILED_DIR, fpaths[0])
+		data_df, array, source_crs, df_coors_long, boundingbox, boundingbox_proj, img = open_as_raster(TIFPATH=TIFPATH, is_reproject=False, is_convert_to_png=False)
 
 		# TODO
 		# 1) get the bounding box of the data
@@ -537,7 +604,7 @@ Create a Dash app with Dash Leaflet to display the map and raster tiles.
 		# 4) change X and Y hovers into lon and lat 
 		# 5) hover also tells you the geographical location  
 		# 6) and then a mini-view can show a leaflet zoom in to that area
-
+		
 		# US vector and raster tiles (and more) here: https://data.maptiler.com/downloads/north-america/us/ 
 
 		R_mask = np.where(np.isnan(array), 176, array) 
