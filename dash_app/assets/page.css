@@ -29,6 +29,14 @@
 
 }
 
+/* #map-select-container {
+    display: none;
+} */
+
+img.leaflet-tile {
+    image-rendering: pixelated;
+}
+
 /* what does this mean? */
 /** { margin: 0; padding: 0 }*/
 
@@ -115,21 +123,10 @@ footer {
 /*    border: 1px solid red;*/
 }
 
-#energy-map {
-    margin-top: -5px;
-    height: calc(100vh - 80px);
-    margin-left:;
-/*    margin-bottom: -5px !important;*/
-/*    height: 700px; */
-/*    800*/
-    width: 1300px;
-}
-
-#energy-map2 {
-    margin-top: -5px;
-/*    height: 700px; */
-/*    800*/
-    width: 1300px;
+.dash-graph {
+    height: calc(100vh - 0px) !important;
+    overflow-y: hidden !important;
+    /* height: 1000px !important; */
 }
 
 #information-tab, #insights-tab, #layers-tab {

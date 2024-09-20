@@ -13,6 +13,8 @@ import xarray as xr
 from pyproj import Transformer, Proj, transform
 from pyproj import CRS
 from PIL import Image
+# import rasterio
+# from rasterio.warp import calculate_default_transform, reproject, Resampling
 
 # sourced scripts
 from definitions import CONNECT_TO_LAMBDA
@@ -21,11 +23,19 @@ if CONNECT_TO_LAMBDA:
     from msdlive_utils import get_bytes
     from io import BytesIO
 
+WEB_CRS = "EPSG:4326" # WGS 84
+# WEB_CRS = "EPSG:3857" # WEB MERCATOR
 
 def read_TIF_metadata(TIF_stream):
 
 	# rioxarray
 	og_proj_array = rioxarray.open_rasterio(TIF_stream, masked=True) # returns xarray.DataArray
+
+	# xds_lonlat = og_proj_array.rio.reproject(WEB_CRS)
+	# print("HERE")
+	# print(xds_lonlat)
+	# print('\n\n\n')
+
 	data_2d = og_proj_array.isel(band=0).values
 	data_df = pd.DataFrame(data_2d, columns=og_proj_array.x, index=og_proj_array.y) 
 	# og_lons = og_proj_array.x
@@ -97,13 +107,14 @@ def open_as_raster(TIFPATH, is_reproject=False, is_convert_to_png=False):
 
 	TIF_source = "Local"
 	TIF_stream = TIFPATH
-	print(f"{TIF_source}: {TIF_stream}\n")
 
 	if CONNECT_TO_LAMBDA:
 
 		TIF_source = "S3"
 		TIF_content = get_bytes(DATASET_ID, TIFPATH)  # reading the retrieved file from the S3 bucket  
 		TIF_stream = BytesIO(TIF_content) # wrap the file content in a BytesIO object for use like a file
+	
+	print(f"{TIF_source}: {TIF_stream}\n")
 
 	array, data_df, transform, source_crs, units_crs, source_bbox = read_TIF_metadata(TIF_stream=TIF_stream)
 	source_bbox = [[24.9493, -125.00165], [49.59037, -66.93457]] # bounds of the United States, not considering off shore
@@ -112,7 +123,7 @@ def open_as_raster(TIFPATH, is_reproject=False, is_convert_to_png=False):
 	print(f"Data is in {source_crs} and its shape is {array.shape}")
 
 	# WGS84 (aka.  Albers Equal) || destination_proj
-	geo_crs = CRS("EPSG:4326")
+	geo_crs = CRS(WEB_CRS)
 	""" 
 	dash-leaflet itself primarily supports EPSG:3857 (Web Mercator) and EPSG:4326 (WGS 84) out of the box
 	"""

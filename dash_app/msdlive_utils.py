@@ -25,6 +25,7 @@ def _get_annonomous_credentials() -> dict:
 
 
 def get_bytes(dataset_id: str, file_path: Path) -> bytes:
+    print("Getting data from S3 ... ")
     print(dataset_id, file_path)
     creds_response = _get_annonomous_credentials()
     # TODO see if we can reuse with_session already impl'd in RDM extension

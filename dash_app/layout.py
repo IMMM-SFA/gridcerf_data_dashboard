@@ -24,17 +24,7 @@ from dash_resizable_panels import PanelGroup, Panel, PanelResizeHandle
 
 # sourced scripts
 from src.utilities import recur_dictify
-from definitions import CONNECT_TO_LAMBDA
-# if CONNECT_TO_LAMBDA:
-# 	from flask import Flask
-# 	from flask_compress import Compress
-
-
-# sourced scripts
-from src.utilities import recur_dictify
-
-# client (browser) paths
-REQUESETS_PATHNAME_PREFIX = "/"
+from definitions import CONNECT_TO_LAMBDA, REQUESETS_PATHNAME_PREFIX
 
 if CONNECT_TO_LAMBDA:
 
@@ -327,8 +317,8 @@ def create_app(): #-> Dash:
 													dcc.Dropdown(
 				                                        id="map-select",
 				                                        className="dropdown-select",
-				                                        options=["Plotly-imshow", "Plotly-datashader, holoviews", "Leaflet and TiTiler", "Mapbox"],
-				                                        value="Plotly-datashader, holoviews", # "Mapbox", # "Plotly-imshow",
+				                                        options=["Plotly-imshow","Plotly-datashader, mapbox", "Plotly-datashader, holoviews", "Leaflet and TiTiler", "Mapbox", "DeckGL"],
+				                                        value="DeckGL", # "Mapbox", # "Plotly-imshow",
 				                                        clearable=False,
 				                                        searchable=False,
 				                                        multi=False

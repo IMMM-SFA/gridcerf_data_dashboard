@@ -5,6 +5,14 @@
 # GRIDCERF, data tool and app that runs visuals on Closed-Loop Geothermal Data
 # -------------------------------------------------------------------------------------
 
+# https://dash.gallery/dash-deck-explorer/globe-view
+
+# THIS is what I want for a quick introduction to JavaScript
+# https://github.com/Esri/quickstart-map-js
+
+
+# https://blog.mapbox.com/visualizing-radar-data-with-vector-tiles-117bc5ee9a5a
+
 # LIBRARIES
 
 # standard libraries
@@ -14,52 +22,35 @@ import yaml
 
 # data manipulation
 import pandas as pd
+import numpy as np
 import xarray as xr
 from functools import reduce
-import rasterio
-from rasterio.warp import calculate_default_transform, reproject, Resampling
-from PIL import Image
 
-# visualization and data manipulation
-import numpy as np
-import plotly.graph_objects as go
-import plotly.express as px
-import datashader as ds
-import geopandas as gpd
-import shapely.geometry
-
-# web app and interactive graphics libraries 
+# web visualization and interactive libraries
 from dash.dependencies import Input, Output, State
 from dash import Dash, html
 from dash import ctx
 from dash.exceptions import PreventUpdate
 from dash import dcc
-import dash_leaflet as dl
-import dash_leaflet.express as dlx
+import holoviews as hv
+hv.extension('bokeh')
+from holoviews.plotting.plotly.dash import to_dash
 
 # SOURCED SCRIPTS
-from definitions import CONNECT_TO_LAMBDA
+from definitions import CONNECT_TO_LAMBDA, PORT, plotly_config, CMAP_BLACK, token
 if CONNECT_TO_LAMBDA:
 	from msdlive_utils import get_bytes
 	from io import BytesIO
 
-# sourced scripts
 from src.reader import open_as_raster
 from src.utilities import create_datashaded_scatterplot #, get_map_data
+from src.imshow import plot_imshow_map
+from src.datashader_mapbox import plot_ds_mapbox_map
+from src.datashader_holoviews import plot_ds_holoviews_map
+from src.leaflet_titiler import plot_leaflet_map
+from src.mapbox_raster import plot_mapbox_map
+from src.deckgl import plot_deckgl_map
 from layout import app, tech_pathways_df, src_meta, all_options, OUTDIR, COMPILED_DIR
-
-# app = create_app()
-
-plotly_config = {'displaylogo': False,
-                'modeBarButtonsToRemove': ['autoScale', 'resetScale'], # High-level: zoom, pan, select, zoomIn, zoomOut, autoScale, resetScale
-                'toImageButtonOptions': {
-                    'format': 'png', # one of png, svg, jpeg, webp
-                    'filename': 'custom_image',
-                    'height': None,
-                    'width': None,
-                    'scale': 6 # Multiply title/legend/axis/canvas sizes by this factor
-                        }
-                  }
 
 # -----------------------------------------------------------------------------
 # Define dash app plotting callbacks.
@@ -236,402 +227,37 @@ def map(maptool, #state,
 	# 	data_array, array, source_crs, df_coors_long, boundingbox, img = open_as_raster(TIFPATH=TIFPATH, is_reproject=False, is_convert_to_png=False)
 	# 	i += 1
 
+	if maptool == "Plotly-datashader, mapbox": 
+
+		fig_div = plot_ds_mapbox_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths)
+
 	if maptool == "Plotly-datashader, holoviews": 
 
-		TIFPATH = os.path.join(COMPILED_DIR, fpaths[0])
-		data_df, array, source_crs, df_coors_long, boundingbox, boundingbox_proj, img = open_as_raster(TIFPATH=TIFPATH, is_reproject=False, is_convert_to_png=False)
+		fig = plot_ds_holoviews_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths)
 
-		# to use RAPIDS ... need to install drivers, but have no GPUs on Mac
+		components = to_dash(app, [fig]) # breaks here, reset_button=True
 
-		# ylat = np.arange(0, array.shape[0], 1).tolist()
-		# xlon = np.arange(0, array.shape[1], 1).tolist()
-		
-		# data_xr = xr.DataArray(array, 
-		# 	coords={'y': ylat,'x': xlon}, 
-		# dims=["y", "x"])
-		# df = data_xr.to_dataframe(name='value').reset_index()
-		# print(df)
-
-		# test
-		fig = df_coors_long.hvplot.scatter(x='LongitudeProj', y='LatitudeProj', by='IsFeasible')
-		# fig = df.hvplot(x="x", y="y", kind='scatter', rasterize=True)
+		fig_div = html.Div(id="energy-map3", 
+						children=components.children
+						)
 		print("HOLOVIEWS PLOTTED")
-		print("\n\n")
-
-		# scatter = create_datashaded_scatterplot(df)
-		components = to_dash(app, [fig])
-
-		fig_div = html.Div(id="plotly-map", 
-						   children=components
-						   )
-
 
 	if maptool == "Leaflet and TiTiler":
 
-		""" 
-		Convert Raster to Web-Compatible Format:
-			Leaflet does not directly support .TIF files, so you’ll need to convert your .TIF file to a format that Leaflet can display, 
-			like PNG or JPEG. You can use a tool like rasterio to handle this conversion.
-		
-		Create a Web Tile Layer: 
-			Convert the raster data into tiles (e.g., using Mapbox or a tile server).
-			Set Up Your Dash App:
-		
-		Create a Dash app with Dash Leaflet to display the map and raster tiles.
-		
-		"""
-		USA_CENTER = [39.8283, -98.5795]
-
-		TIFPATH = os.path.join(COMPILED_DIR, fpaths[0])
-		data_df, array, source_crs, geo_crs, df_coors_long, bounds, PNG = open_as_raster(TIFPATH=TIFPATH, is_reproject=False, is_convert_to_png=True)
-
-		# TODO: 
-		# see if can change CRS of the basemap (experiment with different basemap options)
-		# see if can plot the df_coors_long as an alternative with leaflet where you set the size of the point.
-		
-		# dlx.dicts_to_geojson(geo_data)
-
-		# ## Map Update 
-		# if len(location)>0:
-		# 	df_loc = pd.DataFrame({"state_lower":location})
-		# 	df_loc = df_loc.groupby('state_lower').size().reset_index(name='doc_count')
-		# 	df_loc['state_lower'] = df_loc.state_lower.str.lower()
-		# 	df_loc = df_loc.merge(df_location, on='state_lower', how = 'inner')
-		# 	geo_data  = df_loc.apply(lambda x: [dict(lat=x.latitude, lon=x.longitude)]*x.doc_count, axis = 1)
-		# 	geo_data = reduce(lambda x, y: x + y, geo_data)
-		# else: geo_data=[]
-
-		# MAP CONTROLLER (I.E., LEGEND)
-		# cmaps = ["Viridis", "Spectral", "Greys"]
-		# lbl_map = dict(wspd="Wind speed", temp="Temperature")
-		# unit_map = dict(wspd="m/s", temp="°K")
-		# srng_map = dict(wspd=[0, 10], temp=[250, 300])
-		# param0 = "temp"
-		# cmap0 = "Viridis"
-		# srng0 = srng_map[param0]
-
-		fig_div = html.Div(children=[
-					# Create the map itself.
-					dl.Map(id="map",
-						   center=USA_CENTER, 
-						   zoom=4, 
-						   style={"width": "100%", "height": "100%"},
-						#    crs=str(geo_crs).replace(":", ""),
-						   children=[
-								# dl.TileLayer(),
-								dl.TileLayer(
-									id="tile-layer",
-									url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-									# https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}
-									attribution='Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-									# opacity=0.5
-									),
-								dl.ImageOverlay(url=PNG, opacity=0.5, bounds=bounds), #tileSize=912 #width_height
-								# WMSTileLayer
-								# dl.WMSTileLayer(url="https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi",
-								#             layers="nexrad-n0r-900913", format="image/png", transparent=True),
-								# dl.Colorbar(id="cbar", width=150, height=20, style={"margin-left": "40px"}, position="bottomleft"),
-					]),
-					# Create controller.
-					# html.Div(children=[
-					#     html.Div("Parameter"),
-					#     dcc.Dropdown(id="dd_param", options=[dict(value=p, label=lbl_map[p]) for p in PARAMS], value=param0),
-					#     html.Br(),
-					#     html.Div("Colorscale"),
-					#     dcc.Dropdown(id="dd_cmap", options=[dict(value=c, label=c) for c in cmaps], value=cmap0),
-					#     html.Br(),
-					#     html.Div("Opacity"),
-					#     dcc.Slider(id="opacity", min=0, max=1, value=0.5, step=0.1, marks={0: "0", 0.5: "0.5", 1: "1"}),
-					#     html.Br(),
-					#     html.Div("Stretch range"),
-					#     dcc.RangeSlider(id="srng", min=srng0[0], max=srng0[1], value=srng0,
-					#                     marks={v: "{:.1f}".format(v) for v in srng0}),
-					#     html.Br(),
-					#     html.Div("Value @ click position"),
-					#     html.P(children="-", id="label"),
-					# ], 
-					# className="info")
-
-			], 
-			
-			style={"display": "grid", "width": "100%", "height": "100vh"}
-		)
-
-		# fig_div = html.Div(id="plotly-map", 
-		# 				   children=[dl.Map(
-		# 				   				# dl.BaseLayer(id="baselayer"),
-		# 				   				# dl.TileLayer(url=TIFPATH), center=[56,10], zoom=6, style={'height': '80vh', 'width': '80vh'}
-		# 								dl.LayersControl(
-		# 									[
-		# 										dl.Overlay(
-		# 											[
-		# 												# dl.ImageOverlay(url=png_path, bounds=bounds_png)
-		# 												dl.GeoTIFFOverlay(
-		# 													url=TIFPATH) #, bounds=bounds_tiff)
-		# 											],
-		# 											name="Map", checked=True)
-		# 									],
-		# 									position="topleft"
-		# 								),
-		# 								),
-		# 				   				# dl.GeoJSON(data=dlx.dicts_to_geojson(
-		# 				   				# 							get_map_data()
-		# 				   				# 							), 
-		# 				   				# 			cluster=True, 
-		# 						  		# 	 		superClusterOptions={"radius": 100}, id='map-geojson'),
-										
-
-		# 				   ],
-		# 				   )
-
-		# fig_div = html.Div(id="plotly-map",
-		# 				   children=dl.Map(
-		# 				   				children=[
-		# 				   						  dl.TileLayer(),
-		# 				   						  dl.LayersControl([dl.BaseLayer(
-		# 				   						  						dl.TileLayer(url=TIFPATH)) #, name=key, checked=key == "temp_new", id=key) for key in keys
-		# 				   						  						]
-		# 				   						  					+
-		# 				   						  					[dl.Overlay(dl.LayerGroup(markers), name="TEST", checked=True)]
-		# 				   						  					)
-		# 				   						  ],
-		# 				   				center=[52.195573, 20.883528], zoom=12, id='map'), 
-		# 				   			    style={'width': '80vh', 'height': '80vh'}), 
-		# 				   			    # 'margin': "auto", "display": "block", "position": "relative"
-
-
-		print("Leaflet and TiTiler")
-
+		fig_div = plot_leaflet_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths)
 
 	if maptool == "Mapbox":
 
-		# NOT GOING TO WORK
-
-		TIFPATH = os.path.join(COMPILED_DIR, fpaths[0])
-		data_df, array, source_crs, geo_crs, df_coors_long, boundingbox, img = open_as_raster(TIFPATH=TIFPATH, is_reproject=True, is_convert_to_png=False)
-
-		fig = px.scatter_mapbox(filtered_zero, lat="LatitudeProj", lon="LongitudeProj", hover_name="IsFeasible", #hover_data=["State", "Population"],
-							size="IsFeasible",
-							size_max=1,  # This sets the maximum size of points
-							# size_max_scale=10,  # Controls how much the size scales relative to size_max
-							color_discrete_sequence=["fuchsia"], 
-							zoom=3, 
-							# height=300
-							)
-		fig.update_layout(mapbox_style="open-street-map") # Allowed values which do not require a token are 'open-street-map', 'white-bg', 'carto- positron', 'carto-darkmatter'. 
-		fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-		fig.update_traces(marker=dict(size=4))
-
-		# fig = px.density_mapbox(
-		# 			filtered_zero,
-		# 			lat="LatitudeProj",
-		# 			lon="LongitudeProj",
-		# 			z="IsFeasible",
-		# 			radius=1,
-		# 			zoom=3,
-		# 			# color_continuous_scale=["#121212", "#121212"],
-		# 			# opacity=0.9
-		# 			# mapbox_style="open-street-map"
-		# 		)
-		# 		# fig = go.Figure(go.Scattermapbox())
-		# # fig.update_layout(
-		# # 			mapbox_layers=[
-		# # 				{
-		# # 					# "below": "traces",
-		# # 					"circle": {"radius": 3},
-		# # 					"color":"red",
-		# # 					"minzoom": 6,
-		# # 					"source": gpd.GeoSeries(
-		# # 						filtered_zero.loc[:, ["LongitudeProj", "LatitudeProj"]].apply(
-		# # 							shapely.geometry.Point, axis=1
-		# # 						)
-		# # 					).__geo_interface__,
-		# # 				},
-		# # 			],
-		# # 			mapbox_style="carto-positron",
-		# # 		)
-		# fig.update_layout(
-		# 			mapbox_layers=[
-		# 				{
-		# 					# "below": "traces",
-		# 					"circle": {"radius": 10},
-		# 					"color":"red",
-		# 					"minzoom": 10,
-		# 					"source": gpd.GeoSeries(
-		# 						filtered_zero.loc[:, ["LongitudeProj", "LatitudeProj"]].apply(
-		# 							shapely.geometry.Point, axis=1
-		# 						)
-		# 					).__geo_interface__,
-		# 				},
-		# 			],
-		# 			mapbox_style="open-street-map",
-		# 		)
-
-		# Create a scatter mapbox plot
-		# fig = go.Figure(go.Scattermapbox(
-		# 	lat=filtered_zero['LatitudeProj'],
-		# 	lon=filtered_zero['LongitudeProj'],
-		# 	mode='markers',
-		# 	marker=dict(
-			
-		# 		size=3,  # Fixed size for all points
-		# 		color=filtered_zero['IsFeasible'],  # Optional: Color by a value
-		# 		colorscale='Viridis',  # Optional: Color scale
-		# 		# symbol="circle",
-		# 		showscale=True  # Optional: Show color scale
-		# 	),
-		# 	# text=filtered_zero['IsFeasible'],  # Optional: Tooltip text
-		# ))
-
-		# # Update layout with Mapbox style
-		# fig.update_layout(
-		# 	mapbox=dict(
-		# 		style='carto-positron',  # Choose a Mapbox style
-		# 		# center=dict(lat=41, lon=-75),  # Center map on your data
-		# 		# zoom=10  # Initial zoom level
-		# 	),
-		# 	# title='Map with Fixed Point Size'
-		# )
-
-		fig_div = html.Div(id="plotly-map", 
-						   children=[dcc.Graph(id="energy-map", figure=fig, config=plotly_config)]
-						   )
-
-		# fig.update_layout(mapbox_style="open-street-map")
-
-		# df = px.data.gapminder().query("year == 2007")
-		# fig = px.scatter_geo(df, locations="iso_alpha",
-		# 					color="continent", # which column to use to set the color of markers
-		# 					hover_name="country", # column added to hover information
-		# 					size="pop", # size of markers
-		# 					projection="natural earth")
-							
-		## IF USING MAPBOX THIS IS GREAT BUT IT DOESN'W WORK FOR IMSHOW
-		# Add a basemap layer (a custom image or plotly mapbox style) - optional
-		# fig.update_layout(
-		# 		mapbox_style="open-street-map",  # Choose a basemap style (e.g., 'open-street-map', 'carto-positron', 'white-bg')
-		# 		mapbox=dict(
-		# 				center=dict(lat=37.0902, lon=-95.7129),  # Center of the US (latitude and longitude)
-		# 				zoom=3  # Adjust the zoom level as needed
-		# 		),
-		# 		autosize=True
-		# )
-		# Add a trace in order for the base map to appear
-		# fig.add_trace(go.Scattermapbox(
-		# 	mode='markers',
-		# 	lon=[-95.7129],  # Longitude of center (for example)
-		# 	lat=[37.0902],  # Latitude of center (for example)
-		# 	marker=dict(
-		# 				size=10, # Fixed size?
-		# 				color='red'
-		# 				)
-		# ))
-
-		# Update layout with geo projection and center -- this did nothing ... 
-		# fig.update_layout(
-		# 	geo=dict(
-		# 		scope='usa',
-		# 		center=dict(lat=39.0902, lon=-95.7129),  # Center of the US
-		# 		projection_scale=5  # Adjust this as needed
-		# 	)
-		# )
-		# fig.add_trace(px.imshow(array))
-
-
-
-
-
-
-		# print(data_array)
-
-		# fig_div = html.Div(id="plotly-map", 
-		# 				   children=[
-		# 				   px.scatter_mapbox(data_array), # lon=data_array.x, lat=data_array.y
-		# 				   ]
-		# 				   )
-		# fig_div.update_layout(
-		# 			title='Raster Overlay on Map',
-		# 			geo=dict(
-		# 				scope='usa',
-		# 				projection=dict(type='mercator'),
-		# 				showland=True,
-		# 				landcolor='rgb(243, 243, 243)'
-		# 			)
-		# 		)
-
-
-		# Convert to Plotly-compatible format
-		# img_trace = px.imshow(data_array)
-
-		# # Create map with base layer and raster overlay
-		# fig = px.scatter_mapbox(
-		# 	lat=[37.7749],
-		# 	lon=[-95.7129],
-		# 	color_discrete_sequence=['blue'],
-		# 	zoom=4,
-		# 	mapbox_style='open-street-map'
-		# )
-
-		# print(img_trace.data[0])
-		# fig.add_trace(img_trace.data[0])
-
-		# fig.update_layout(
-		# 	title='Raster Overlay on Map',
-		# 	mapbox=dict(
-		# 		style='open-street-map',
-		# 		center=dict(lat=37.7749, lon=-95.7129),
-		# 		zoom=4
-		# 	)
-		# )
-
-		# fig_div = html.Div(id="plotly-map", 
-		# 				   children=[dcc.Graph(id="energy-map", figure=fig, config=plotly_config)]
-		# 				   )
-
-		print("Mapbox")
-
+		fig_div = plot_mapbox_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths)
 
 	if maptool == "Plotly-imshow":
 
-		TIFPATH = os.path.join(COMPILED_DIR, fpaths[0])
-		data_df, array, source_crs, df_coors_long, boundingbox, boundingbox_proj, img = open_as_raster(TIFPATH=TIFPATH, is_reproject=False, is_convert_to_png=False)
+		fig_div = plot_imshow_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths)
+	
+	if maptool == "DeckGL":
 
-		# TODO
-		# 1) get the bounding box of the data
-		# 2) set that to basemap
-		# 3) extract the basemap(s)
-		# 3) place that first into px.imshow() and then add array trace with fig.add_trace()
-		# 4) change X and Y hovers into lon and lat 
-		# 5) hover also tells you the geographical location  
-		# 6) and then a mini-view can show a leaflet zoom in to that area
+		fig_div = plot_deckgl_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths)
 		
-		# US vector and raster tiles (and more) here: https://data.maptiler.com/downloads/north-america/us/ 
-
-		R_mask = np.where(np.isnan(array), 176, array) 
-		G_mask = np.where(np.isnan(array), 233, array)
-		B_mask = np.where(np.isnan(array), 235, array)
-
-		R_mask = np.where(array==0, 0, R_mask) 
-		G_mask = np.where(array==0, 0, G_mask)
-		B_mask = np.where(array==0, 0, B_mask)  
-
-		rgb_stack = np.stack((R_mask, G_mask, B_mask), axis=-1)
-		fig = px.imshow(rgb_stack)
-
-		fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
-		fig.update_xaxes(showticklabels=False)
-		fig.update_yaxes(showticklabels=False)
-		fig.update(layout_coloraxis_showscale=False)
-		# fig.update_traces(showlegend=False)
-		# fig.update_traces(marker_showscale=False)
-		# fig.write_html(os.path.join(OUTDIR, "map-layer.html"))
-		print("IMSHOW PLOTTED")
-		print("\n\n")
-
-		fig_div = html.Div(id="plotly-map", 
-						   children=[dcc.Graph(id="energy-map", figure=fig, config=plotly_config)]
-						   )
-
 	return fig_div
 
 
@@ -672,5 +298,3 @@ def output_string(active_cell):
 	
 	return str(title), str(tag_id), str(src_type), str(desc), str(date_updated), str(data_accessed), str(layer_methodology), str(citation), str(data_link)
 
-
-server = app.server 
