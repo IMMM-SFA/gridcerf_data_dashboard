@@ -213,7 +213,6 @@ def create_app():
 	                         value=tabs[1],
 	                         selected_className="active-tab",
 	                         children=[
-
 	                         			html.Br(),
 	                         			# html.Div(id="map-select-container",
 	                         			# 		 className="select-container",
