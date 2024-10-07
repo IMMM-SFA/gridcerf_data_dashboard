@@ -5,8 +5,6 @@ import os
 # import sys
 import yaml
 
-# find . -name ".DS_Store" -delete 
-
 def dir_to_dict(path):
 
     directory = {}

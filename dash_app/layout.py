@@ -5,76 +5,55 @@
 # Define dash app layout.
 # -----------------------------------------------------------------------------
 
-# standard libraries
+# LIBRARIES
+
+## standard libraries
 import os
 import sys
 
-# data manipulation
+## data manipulation
 import pandas as pd
 
-# web app and interactive graphics libraries 
+## AWS libraries
 from flask import Flask
 from flask_compress import Compress
+
+## web framework
 import dash
 from dash import html, dcc
-import dash_bootstrap_components as dbc     # Adds bootstrap components for more web themes and templates
-import dash_leaflet as dl
+import dash_bootstrap_components as dbc
 from dash import dash_table
-from dash_resizable_panels import PanelGroup, Panel, PanelResizeHandle
+from flask_caching import Cache
+cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
 
-# sourced scripts
+# SOURCED SCRIPTS
 from src.utilities import recur_dictify
-from definitions import CONNECT_TO_LAMBDA, REQUESETS_PATHNAME_PREFIX
+from definitions import CONNECT_TO_LAMBDA, REQUESETS_PATHNAME_PREFIX, METADATA_DIR, OUTDIR
 
-if CONNECT_TO_LAMBDA:
-
-	DATA_DIR = ""
-	# MSD-LIVE added logic to support app running locally and in lambda:
-	LAMBDA_TASK_ROOT = os.getenv('LAMBDA_TASK_ROOT')
-	# If 'LAMBDA_TASK_ROOT' is not set, METADATA_DIR will be './metadata'
-	# If 'LAMBDA_TASK_ROOT' is set, METADATA_DIR will be the absolute path
-	METADATA_DIR = './metadata' if LAMBDA_TASK_ROOT is None else os.path.join(LAMBDA_TASK_ROOT, "dash_app", "metadata")
-	# client (browser) paths
-
-else:
-	
-	# file paths and global variables
-	DATA_DIR = "../../data/msdlive-gridcerf"
-	METADATA_DIR = os.path.join(DATA_DIR, "metadata")
-
-
-COMPILED_DIR = os.path.join(DATA_DIR, "gridcerf/compiled/compiled_technology_layers")
-OUTDIR = "tmp"
-
-# central and queryable 
-tech_pathways_df = pd.read_csv(os.path.join(METADATA_DIR, "msdlive_tech_paths.csv")) # tech_pathways_mapped.csv
-src_meta = pd.read_csv(os.path.join(METADATA_DIR, "metadata_ab_edits.csv"))
+# PATHS
+tech_pathways_df = pd.read_csv(os.path.join(METADATA_DIR, "msdlive_tech_paths.csv")) 
+src_meta = pd.read_csv(os.path.join(METADATA_DIR, "metadata_ab_edits.csv")) ## sourced
 src_meta_df = src_meta[["plain_language_layer_name", "source_tag_id", "source_data_title"]]
 
 tech_pathways_df = tech_pathways_df.fillna('--')
-tech_pathways_df['ui_year'] = tech_pathways_df['ui_year'].astype(str)
+tech_pathways_df['ui_year'] = tech_pathways_df['ui_year'].astype(str) ## sourced
+
 pathway = ["ui_tech", "ui_subtype", "ui_feature", "ui_is_ccs", "ui_cooling_type", "ui_capacity_factor"]
 tech_pathways_dict = recur_dictify(df=tech_pathways_df[pathway])
-all_options = tech_pathways_dict
-
+all_options = tech_pathways_dict ## sourced
 
 # -----------------------------------------------------------------------------
 # Dash app layout begins here.
 # -----------------------------------------------------------------------------
 
-# MSD-LIVE TODO need to wrap in a function to support lambda
-def create_app(): #-> Dash:
+def create_app():
 	server = Flask(__name__)
 	Compress(server)
 
-
 	if CONNECT_TO_LAMBDA:
+
 		app = dash.Dash(__name__, assets_folder="assets", 
-						# Bootstrap stylesheets available on the web: https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/
-						# Link to a stylesheet served over a content delivery network (CDN)
-						# BOOTSTRAP links to the standard Bootstrap stylesheet
 		                external_stylesheets=[dbc.themes.BOOTSTRAP], 
-		                # url_base_pathname=URL_BASE_PATHNAME, # not needed
 		                requests_pathname_prefix=REQUESETS_PATHNAME_PREFIX,
 		                meta_tags=[
 		                		   {"charset": "UTF-8"},
@@ -82,13 +61,9 @@ def create_app(): #-> Dash:
 		                		   {"name": "viewport", "content": "width=device-width, initial-scale=1"},
 		                           {"name": "description", "content": "Geospatial Raster Input Data for Capacity Expansion Regional Feasibility (GRIDCERF). A high-resolution energy mapper."}
 		                        ],
-
-						# MSD-LIVE compressing the response via flask-compress, can do both locally and for lambda
-						# MSD-LIVE add logic to set serve_locally to support lambda
-						# You must set serve_locally=False or the app will not work when deployed remotely			 
-						serve_locally = False if LAMBDA_TASK_ROOT is not None else True,
+						serve_locally = False if LAMBDA_TASK_ROOT is not None else True, # must be False for app deployment on AWS lambda
 						server=server
-							)
+						)
 
 	else:
 
@@ -102,43 +77,10 @@ def create_app(): #-> Dash:
 	                           {"name": "description", "content": "Geospatial Raster Input Data for Capacity Expansion Regional Feasibility (GRIDCERF). A high-resolution energy mapper."}
 	                        ],
 						)
-		
 	
-	app.index_string = '''
-	<!DOCTYPE html>
-	<html>
-		<head>
-			{%metas%}
-			{%css%}
-			<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-			<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-			<script src="https://unpkg.com/proj4@2.7.2/dist/proj4.js"></script>
-			<script src="https://unpkg.com/proj4leaflet@1.0.1/dist/proj4leaflet.js"></script>
-			<script src="/assets/custom_crs.js"></script>
-		</head>
-		<body>
-			{%app_entry%}
-			{%config%}
-			{%scripts%}
-			{%renderer%}
-		</body>
-	</html>
-	'''
-	# print("did it work?")
-
+	cache.init_app(app.server)
+	
 	app.title = "GRIDCERF | Geospatial Raster Input Data for Capacity Expansion Regional Feasibility"
-
-
-	plotly_config = {'displaylogo': False,
-	                'modeBarButtonsToRemove': ['autoScale', 'resetScale'], # High-level: zoom, pan, select, zoomIn, zoomOut, autoScale, resetScale
-	                'toImageButtonOptions': {
-	                    'format': 'png', # one of png, svg, jpeg, webp
-	                    'filename': 'custom_image',
-	                    'height': None,
-	                    'width': None,
-	                    'scale': 6 # Multiply title/legend/axis/canvas sizes by this factor
-	                        }
-	                  }
 
 	# -----------------------------------------------
 	# HTML components.
@@ -155,37 +97,32 @@ def create_app(): #-> Dash:
 					"South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Virginia", 
 					"Virgin Islands", "Vermont", "Washington", "Wisconsin", "West Virginia", "Wyoming"]
 
-
 	tabs = ["information-tab", "insights-tab", "layers-tab"]
 
 	section_headers = ["Overview", "Authors", "Funding"]
 
-	title_text = """Geospatial Raster Input Data for Capacity Expansion Regional Feasibility (GRIDCERF)"""
+	title_text = """Geospatial Raster Input Data for Capacity Expansion Regional Feasibility (GRIDCERF) Version 2.0"""
 
-	description_text = """A high-resolution energy mapper for exploring the siting viability of renewable 
-						 and non-renewable power plants in the United States."""
+	description_text = """A high-resolution energy mapper for exploring the siting suitability of renewable 
+							and non-renewable power plants in the contiguous United States."""
 
-	# overview_text = """The United States will likely need new utility-scale generation resources because rising
-	# 				   electricity demand cannot be met by energy efficiency initiatives alone. 
-	# 				   Climate change, energy system transitions, and socioeconomic shifts are also driving 
-	# 				   electricity demand and power plant siting."""
-	# overview_text_cont = """To explore where new power plants can be built, GRIDCERF geovisualizes technology-specific 
-	# 				   data comprised of 264 suitability layers across 56 power plant technologies. The data are fully 
-	# 				   compatible with integrated, multi-model approaches, so they can easily be re-ingested into 
-	# 				   geospatial modeling software."""
+	overview_text = """The GRIDCERF database is a high-resolution product to evaluate siting suitability for renewable 
+						and non-renewable power plants in the conterminous United States. GRIDCERF offers hundreds of 
+						individual suitability layers for use with both renewable and non-renewable power plant 
+						technology configurations in a harmonized format that can be easily ingested by 
+						geospatially-enabled modeling software. 
+						"""
+	
+	overview_text2 = """ GRIDCERF data can be directly used with the power plant siting model CERF 
+						(Capacity Expansion Regional Feasibility) to site power plants at a 1km2 resolution."""
 
-	overview_text = """The United States will likely need new utility-scale generation resources because rising
-					   electricity demand cannot be met by energy efficiency initiatives alone. To explore 
-					   where new power plants can be built, GRIDCERF geovisualizes technology-specific 
-					   data comprised of 264 suitability layers across 56 power plant technologies. The data are fully 
-					   compatible with integrated, multi-model approaches, so they can easily be re-ingested into 
-					   geospatial modeling software."""
+	overview_text3 = """Download GRIDCERF data from MSDLIVE."""
 
 	author_text = """GRIDCERF represents the extensive collection of data formatting, processing, and visualization 
-					 created by the IM3 Group.""" # at the Pacific Northwest National Laboratory."""
+					 created by the IM3 Group."""
 
 	funding_text = """This research was funded by the U.S. Department of Energy, Office of Science, as part of 
-					  research in MultiSector Dynamics, Earth and Environmental Systems Modeling Program."""
+						research in MultiSector Dynamics, Earth and Environmental Systems Modeling Program."""
 
 	select_headers = ["Select a visualization tool", 
 					  "Select a state", 
@@ -196,9 +133,9 @@ def create_app(): #-> Dash:
 					  "Select a Cooling Type", 
 					  "Select a Shared Socioeconomic Pathway (SSP)", #  Select a socioeconomic scenario
 					  "Select a feature",
-					  "Select a Capacity Factor (CF)"
-
+					  "Select a Class" # Capacity Factor (CF)
 					  ]
+
 	select_ids = ["map-select",
 				  "state-select",
 				  "year-select",
@@ -240,7 +177,7 @@ def create_app(): #-> Dash:
 							]
 						)
 
-	def metadata_card():
+	def layer_metadata_card():
 
 		return html.Div(
 						id="meta",
@@ -271,37 +208,6 @@ def create_app(): #-> Dash:
 
 	def tabs_card():
 
-	    # information_tab = dcc.Tab(label="Information",
-		# 	                         id=tabs[0],
-		# 	                         value=tabs[0],
-		# 	                         selected_className="active-tab",
-		# 	                         children=[
-		# 	                                   # html.Hr(className="tab-hr"),
-		# 	                                   html.Div(id='intro', 
-	    #                                                         children=[html.P(title_text, id='title', className="title-text"),
-	    #                                                                   html.P(description_text, id='description-text', className="page-text"), 
-	    #                                                                   html.P(section_headers[0], id='header0', className="header-text"),
-	    #                                                                   html.Hr(className="hr"),
-	    #                                                                   html.P(overview_text, id='overview-text', className="page-text"),
-	    #                                                                   html.P(overview_text_cont, id='overview-text-cont', className="page-text"),
-	    #                                                                   html.P(section_headers[1], id='header1', className="header-text"),
-	    #                                                                   html.Hr(className="hr"),
-	    #                                                                   html.P(author_text, id='author-text', className="page-text"), 
-	    #                                                                   html.P(section_headers[2], id='header2', className="header-text"),
-	    #                                                                   html.Hr(className="hr"),
-	    #                                                                   html.P(funding_text, id='funding-text', className="page-text"),
-	    #                                                                   # html.Label([html.P("Download the contributing", id="shorttext1"),
-	    #                                                                   #               html.A('papers', href='https://gdr.openei.org/submissions/1473', id='hyperlink1'),
-	    #                                                                   #               html.P("and", id="shorttext2"),
-	    #                                                                   #               html.A('code', href='https://github.com/pnnl/GeoCLUSTER', id='hyperlink2'),
-	    #                                                                   #               html.P(".", id="shorttext3"),
-	    #                                                                   #               ], id='ab-note4')
-	    #                                                 ]),
-		# 	                                   # html.Button("Get Started", id="launch-btn", className="button"),
-		# 	                                   ]
-		#                                    )
-
-
 	    insights_tab = dcc.Tab(label="Technology Suitability",
 	                         id=tabs[1],
 	                         value=tabs[1],
@@ -310,22 +216,22 @@ def create_app(): #-> Dash:
 
 	                         			html.Br(),
 
-	                         			html.Div(id="map-select-container",
-	                         					 className="select-container",
-	                         					 children=[
-		                         					html.P(select_headers[0], id='select-header0', className="dropdown-header-text"),
-													dcc.Dropdown(
-				                                        id="map-select",
-				                                        className="dropdown-select",
-				                                        options=["Plotly-imshow","Plotly-datashader, mapbox", "Plotly-datashader, holoviews", "Leaflet and TiTiler", "Mapbox", "DeckGL"],
-				                                        value="DeckGL", # "Mapbox", # "Plotly-imshow",
-				                                        clearable=False,
-				                                        searchable=False,
-				                                        multi=False
-				                                    ),
+	                         			# html.Div(id="map-select-container",
+	                         			# 		 className="select-container",
+	                         			# 		 children=[
+		                         		# 			html.P(select_headers[0], id='select-header0', className="dropdown-header-text"),
+										# 			dcc.Dropdown(
+				                        #                 id="map-select",
+				                        #                 className="dropdown-select",
+				                        #                 options=["Plotly-imshow","Plotly-datashader, mapbox", "Plotly-datashader, holoviews", "Leaflet and TiTiler", "Mapbox", "DeckGL"],
+				                        #                 value="DeckGL", # "Mapbox", # "Plotly-imshow",
+				                        #                 clearable=False,
+				                        #                 searchable=False,
+				                        #                 multi=False
+				                        #             ),
 
-	                         					 ]
-	                         					 ),
+	                         			# 		 ]
+	                         			# 		 ),
 	                         			
 	                                    # html.P(select_headers[1], id='select-header1', className="dropdown-header-text"),
 										# dcc.Dropdown(
@@ -337,9 +243,6 @@ def create_app(): #-> Dash:
 	                                    #     searchable=False,
 	                                    #     multi=False
 	                                    # ),
-
-										# can also make year a slider from 2025 - 2100 with 5 year increments, 
-										# OR make it an animation
 										
 										html.Div(id="tech-select-container",
 	                         					 className="select-container",
@@ -478,7 +381,7 @@ def create_app(): #-> Dash:
 							   children=[
 							   		html.Br(),
 								    table_card(),
-								    metadata_card()
+								    layer_metadata_card()
 							   ]
 							   )
 
@@ -493,11 +396,11 @@ def create_app(): #-> Dash:
 
 
 
-	def banner_card():
+	def header_card():
 
 		"""Builds the banner at the top of the page containing app name and logos. """
 
-		return html.Header( # html.Header
+		return html.Header(
 				id="banner",
 				className="bannerbar",
 				children=[
@@ -514,15 +417,6 @@ def create_app(): #-> Dash:
 		 						  			),
 		 						  ]
 		 				),
-					# html.A(
-		 			# 	href="https://www.pnnl.gov/",
-		 			# 	target="_blank",
-		 			# 	children=[
-		 			# 			  html.Img(id="lab-logo", className="logo", alt="lab logo",
-		 			# 			  		   src=app.get_asset_url("icons/logos_icons/pnnl_abbreviated_logo.png")),
-		 			# 			  ]
-		 			# 		),
-
 					html.A(
 		 				href="https://im3.pnnl.gov/",
 		 				target="_blank",
@@ -609,15 +503,36 @@ def create_app(): #-> Dash:
 	def map():
 
 		return html.Div(
-						id="map",
-						className="map-column",
 						children=[
-								  # dcc.Graph(id="energy-map", config=plotly_config),
-								  # dl.Map(dl.TileLayer(), center=[56,10], zoom=6, style={'height': '50vh'})
-
+						dcc.Checklist(
+								id='layer-selector',
+								options=[
+									{'label': 'Basemap Ocean', 'value': 'base-map-ocean'}, # AB: need to predfine the database 
+									{'label': 'Basemap Land', 'value': 'base-map'}, 
+									{'label': 'Feasibility Layer', 'value': 'feasibility-layer'}, 
+								],
+								value=["base-map-ocean", "base-map"],  # Default selected layers
+								inline=True,
+								style={'display': 'none'}
+							),
+						dcc.Loading(
+								id="loading",
+								type="circle",
+								# style={"backgroundColor": "transparent"},
+								children=[
+									html.Div(
+									id="map",
+									className="map-column",
+									children=[
+										]
+									)
+								]
+						)
 						]
-			)
+		)
 
+
+    
 
 	def about():
 
@@ -632,10 +547,13 @@ def create_app(): #-> Dash:
 	                                      html.P(section_headers[0], id='header0', className="header-text"),
 	                                      html.Hr(className="hr"),
 	                                      html.P(overview_text, id='overview-text', className="page-text"),
+										  html.P(overview_text2, id='overview-text2', className="page-text"),
+										  html.A(overview_text3, href="https://doi.org/10.57931/2281697", target="_blank", id='overview-text3', className="page-text"),
+										  html.Br(),
+										  html.Br(),
+
 	                                      # html.P(overview_text_cont, id='overview-text-cont', className="page-text"),
-	                                      html.P(section_headers[1], id='header1', className="header-text"),
-	                                      html.Hr(className="hr"),
-	                                      html.P(author_text, id='author-text', className="page-text"), 
+	                                    #   html.P(section_headers[1], id='header1', className="header-text"),
 	                                      html.P(section_headers[2], id='header2', className="header-text"),
 	                                      html.Hr(className="hr"),
 	                                      html.P(funding_text, id='funding-text', className="page-text"),
@@ -646,17 +564,6 @@ def create_app(): #-> Dash:
 	                                      #               html.P(".", id="shorttext3"),
 	                                      #               ], id='ab-note4')
 	                    ]),
-
-
-						# html.Div(
-						#     [
-						#         html.H2("Sidebar", className="display-4"),
-						#         html.Hr(),
-						#         html.P(
-						#             "A simple sidebar layout with navigation links", className="lead"
-						#         ),
-						#     ])
-
 						]
 			)
 
@@ -678,44 +585,6 @@ def create_app(): #-> Dash:
 				className="page",
 				children=[
 
-					# html.Div([
-					#     PanelGroup(
-					#         id='panel-group',
-					#         children=[
-					#             Panel(
-					#                 id='panel-1',
-					#                 children=[
-					#                     about(),
-					#                 ],
-					#             ),
-					#             PanelResizeHandle(
-					#             	html.Div(
-					#             		style={"backgroundColor": "grey", "height": "100%", "width": "5px"})
-					#             	),
-					#             Panel(
-					#                 id='panel-2',
-					#                 children=[
-					#                     map()
-					#                 ],
-					#                 # style={"backgroundColor": "black", "color": "white"}
-					#             ),
-					#             PanelResizeHandle(
-					#             	html.Div(
-					#             		style={"backgroundColor": "grey", "height": "100%", "width": "5px"})
-					#             	),
-					#             Panel(
-					#                 id='panel-3',
-					#                 children=[
-					#                     nav()
-					#                 ],
-					#                 # style={"backgroundColor": "black", "color": "white"}
-					#             )
-					#         ], direction='horizontal'
-					#     )
-					# ], style={"height": "100vh"})
-
-
-
 						   about(),
 						   map(),
 						   nav(),
@@ -727,7 +596,7 @@ def create_app(): #-> Dash:
 					      id="app-container",
 					      children=[
 									# dcc.Store(id='results'),
-									banner_card(),
+									header_card(),
 									page_card(),
 									footer_card(),
 							],

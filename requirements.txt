@@ -17,6 +17,7 @@ bokeh==3.3.4
 boto3==1.34.112
 botocore==1.34.112
 Brotli==1.1.0
+cachelib==0.9.0
 certifi==2023.11.17
 cffi==1.16.0
 charset-normalizer==3.3.2
@@ -38,6 +39,7 @@ dash-resizable-panels==0.1.0
 dash-svg==0.0.12
 dash-table==5.0.0
 dash_daq==0.5.0
+dash_deck==0.0.1
 dask==2024.2.0
 datashader==0.16.0
 debugpy==1.8.1
@@ -49,6 +51,7 @@ fastjsonschema==2.19.1
 fastparquet==2024.2.0
 fiona==1.9.5
 Flask==3.0.1
+Flask-Caching==2.3.0
 Flask-Compress==1.15
 fonttools==4.47.2
 fqdn==1.5.1
@@ -122,6 +125,7 @@ ptyprocess==0.7.0
 pure-eval==0.2.2
 pycparser==2.21
 pyct==0.5.0
+pydeck==0.9.1
 Pygments==2.17.2
 pyparsing==3.1.1
 pyproj==3.6.1

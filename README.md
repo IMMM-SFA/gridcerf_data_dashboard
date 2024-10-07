@@ -66,19 +66,28 @@ Also, GRIDCERF most importantly requires **Dash version >=2.9.2**. Dash >=2.9.2 
 
 The `requirements.txt` in `dash_app` lists Python packages and their versions needed to run GRIDCERF following Python installation. We suggest your environment reflects these package versions.
 
-![](https://img.shields.io/badge/bokeh-3.3.4-darkgrey)  
+![](https://img.shields.io/badge/boto3-1.34.112-darkgrey)  
+![](https://img.shields.io/badge/pydeck-0.9.1-darkgrey)  
 ![](https://img.shields.io/badge/dash-2.14.2-darkgrey)  
 ![](https://img.shields.io/badge/dash_bootstrap_components-1.5.0-darkgrey)  
-![](https://img.shields.io/badge/dash_daq-0.5.0-darkgrey)  
-![](https://img.shields.io/badge/dash_leaflet-1.0.15-darkgrey)  
+![](https://img.shields.io/badge/dash_deck-0.5.0-darkgrey)  
+![](https://img.shields.io/badge/dash_daq-0.0.1-darkgrey)  
+![](https://img.shields.io/badge/dash_html_components-2.0.0-darkgrey)  
+![](https://img.shields.io/badge/dash_resizable_panels-0.1.0-darkgrey)  
 ![](https://img.shields.io/badge/dash_svg-0.0.12-darkgrey)  
-![](https://img.shields.io/badge/holoviews-1.18.3-darkgrey)  
-![](https://img.shields.io/badge/hvplot-0.9.2-darkgrey)  
+![](https://img.shields.io/badge/Flask-3.0.3-darkgrey)  
+![](https://img.shields.io/badge/Flask_Caching-2.3.0-darkgrey)   ![](https://img.shields.io/badge/Flask_Compress-1.15-darkgrey)  
+![](https://img.shields.io/badge/Requests-2.32.3-darkgrey)   ![](https://img.shields.io/badge/httpx-0.27.2-darkgrey)  
 ![](https://img.shields.io/badge/pandas-2.2.1-darkgrey)  
+![](https://img.shields.io/badge/geopandas-0.14.2-darkgrey)  
 ![](https://img.shields.io/badge/numpy-1.26.4-darkgrey)  
-![](https://img.shields.io/badge/plotly-5.18.0-darkgrey)  
 ![](https://img.shields.io/badge/rasterio-1.3.9-darkgrey)  
 ![](https://img.shields.io/badge/xarray-2024.1.1-darkgrey)  
+![](https://img.shields.io/badge/rioxarray-0.15.5-darkgrey)  
+![](https://img.shields.io/badge/Pillow-10.4.0-darkgrey)  
+![](https://img.shields.io/badge/pyproj-10.4.0-darkgrey)  
+![](https://img.shields.io/badge/PyYAML-6.0.1-darkgrey)  
+![](https://img.shields.io/badge/Shapely-2.0.6-darkgrey)  
 
 ## Run GRIDCERF Locally <a name="local"></a>
 
