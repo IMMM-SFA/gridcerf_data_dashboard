@@ -4,9 +4,11 @@ import sys
 from functools import lru_cache
 from apig_wsgi import make_lambda_handler
 
+# LOGS at https://msdlive-gridcerfapp-logs.s3.amazonaws.com/ 
+
 # SOURCED SCRIPT
-# from dash_app.app import app
-from dash_app.layout import create_app
+from dash_app.app import app
+# from dash_app.layout import create_app
 
 @lru_cache(maxsize=5)
 def get_wsgi_handler():
@@ -17,8 +19,8 @@ def get_wsgi_handler():
         _type_: lambda handler that is wsgi compatible and backed by the Dash application
     """
     return make_lambda_handler(
-        wsgi_app=create_app().server,
-        # wsgi_app=app.server,
+        # wsgi_app=create_app().server,
+        wsgi_app=app.server,
         binary_support=True,
     )
 
