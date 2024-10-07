@@ -215,7 +215,6 @@ def create_app():
 	                         children=[
 
 	                         			html.Br(),
-
 	                         			# html.Div(id="map-select-container",
 	                         			# 		 className="select-container",
 	                         			# 		 children=[

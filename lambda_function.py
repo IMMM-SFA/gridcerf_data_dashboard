@@ -17,8 +17,8 @@ def get_wsgi_handler():
         _type_: lambda handler that is wsgi compatible and backed by the Dash application
     """
     return make_lambda_handler(
-        # wsgi_app=create_app().server,
-        wsgi_app=app.server,
+        wsgi_app=create_app().server,
+        # wsgi_app=app.server,
         binary_support=True,
     )
 
