@@ -33,12 +33,19 @@ from layout import cache
 from definitions import OUTDIR
 
 @cache.memoize(timeout=7200)  # Cache for 2 hours 
-def load_large_data(layer_name, COMPILED_DIR, fpaths):
+def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode):
 
     if layer_name == "base-map-ocean":
 
         OCEANS = json.load(open('data/ne_50m_ocean.geojson', 'r', encoding='utf-8'))
 
+        # #D4DADC and RBG is 212, 218, 220
+
+        if adjust_mode:  # When the switch is "True"
+            fill_color = [212, 218, 220] # light grey
+        else:
+            fill_color = [0, 31, 72] # dark blue
+            
         return pydeck.Layer(
                     "GeoJsonLayer",
                     id="base-map-ocean",
@@ -48,29 +55,47 @@ def load_large_data(layer_name, COMPILED_DIR, fpaths):
                     pickable=False, # False to remove tooltip over oceans
                     auto_highlight=True,
                     get_line_color=[60, 60, 60], # [134, 181, 209], [22, 36, 105],
-                    get_fill_color=[0, 31, 72],                
+                    get_fill_color=fill_color,                
                     opacity=0.5,                
                 )
+                
 
     if layer_name == "base-map":
 
         LAND = "https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_0_scale_rank.geojson"
 
-        return pydeck.Layer(
-                    "GeoJsonLayer",
-                    id="base-map",
-                    data=LAND,
-                    stroked=False,
-                    filled=True,
-                    get_line_color=[60, 60, 60],
-                    get_fill_color=[66, 133, 55], # green [32, 145, 62], [200, 200, 200], [160, 160, 160]
-                )
+        if adjust_mode:  # When the switch is "True"
+            # fill_color = [250, 250, 248] # near white
+            return pydeck.Layer(
+                        "GeoJsonLayer",
+                        id="base-map",
+                        data=LAND,
+                        stroked=False,
+                        filled=True,
+                        get_line_color=[60, 60, 60],
+                        get_fill_color=[250, 250, 248] # near white
+                    )
+        else:
+            return pydeck.Layer(
+                        "GeoJsonLayer",
+                        id="base-map",
+                        data=LAND,
+                        stroked=False,
+                        filled=True,
+                        get_line_color=[60, 60, 60],
+                        get_fill_color=[66, 133, 55], # green [32, 145, 62], [200, 200, 200], [160, 160, 160]
+                    )
     
     if layer_name == "feasibility-layer":
 
         TIFPATH = os.path.join(COMPILED_DIR, fpaths[0])
         data_df, array, source_crs, geo_crs, df_coors_long, boundingbox, img = open_as_raster(TIFPATH=TIFPATH, is_reproject=True, is_convert_to_png=False)
         
+        if adjust_mode:  # When the switch is "True"
+            url_path = "/assets/icons/map_icons/im3_blue_square.svg"
+        else:
+            url_path = "/assets/icons/map_icons/fuchsia_square.svg"
+
         icon_data = {
             "url": "/assets/icons/map_icons/blue_square.svg", # svg repo
             "width": 242,
@@ -129,7 +154,7 @@ def load_large_data(layer_name, COMPILED_DIR, fpaths):
                 )
 
 
-def plot_deckgl_map(COMPILED_DIR, fpaths, selected_layers):
+def plot_deckgl_map(COMPILED_DIR, fpaths, selected_layers, adjust_mode):
 
     view_state = pydeck.ViewState(latitude=39.8283, longitude=-98.5795, # center U.S.
                                   zoom=2,
@@ -141,7 +166,7 @@ def plot_deckgl_map(COMPILED_DIR, fpaths, selected_layers):
     deck_layers = []
 
     for layer in selected_layers:
-        layer = load_large_data(layer, COMPILED_DIR, fpaths)  # Load data, cached if previously loaded
+        layer = load_large_data(layer, COMPILED_DIR, fpaths, adjust_mode)  # Load data, cached if previously loaded
         deck_layers.append(layer)
 
     r = pydeck.Deck(
@@ -184,13 +209,23 @@ def plot_deckgl_map(COMPILED_DIR, fpaths, selected_layers):
         JavaScript JSON parser, but it can be parsed by Python's JSON engine.
     """
 
-    mapgl = html.Div(
+    if adjust_mode:
+        mapgl = html.Div(
+        dash_deck.DeckGL(
+            json.loads(r.to_json()),
+            id="deck-gl",
+            style={"background-color": "white"},
+            # tooltip={"text": "{IsFeasible} feasible, {LatitudeProj}, {LongitudeProj}"},
+            )
+        )
+    else:
+        mapgl = html.Div(
         dash_deck.DeckGL(
             json.loads(r.to_json()),
             id="deck-gl",
             style={"background-color": "black"},
             # tooltip={"text": "{IsFeasible} feasible, {LatitudeProj}, {LongitudeProj}"},
+            )
         )
-    )
 
     return mapgl

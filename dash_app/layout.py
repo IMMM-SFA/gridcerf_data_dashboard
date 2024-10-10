@@ -22,6 +22,7 @@ from flask_compress import Compress
 import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc
+import dash_daq as daq
 from dash import dash_table
 from flask_caching import Cache
 cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
@@ -97,7 +98,7 @@ def create_app():
 					"South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Virginia", 
 					"Virgin Islands", "Vermont", "Washington", "Wisconsin", "West Virginia", "Wyoming"]
 
-	tabs = ["information-tab", "insights-tab", "layers-tab"]
+	tabs = ["", "insights-tab", "layers-tab"]
 
 	section_headers = ["Overview", "Authors", "Funding"]
 
@@ -116,7 +117,7 @@ def create_app():
 	overview_text2 = """ GRIDCERF data can be directly used with the power plant siting model CERF 
 						(Capacity Expansion Regional Feasibility) to site power plants at a 1km2 resolution."""
 
-	overview_text3 = """Download GRIDCERF data from MSDLIVE."""
+	overview_text3 = """Download the data."""
 
 	author_text = """GRIDCERF represents the extensive collection of data formatting, processing, and visualization 
 					 created by the IM3 Group."""
@@ -129,7 +130,7 @@ def create_app():
 					  "Select a year", 
 					  "Select a technology",
 					  "Select a technology sub-type",
-					  "Select a Carbon Capture Sequestration (CCS) method",
+					  "Carbon Capture Sequestration (CCS)",
 					  "Select a Cooling Type", 
 					  "Select a Shared Socioeconomic Pathway (SSP)", #  Select a socioeconomic scenario
 					  "Select a feature",
@@ -146,12 +147,18 @@ def create_app():
 				  "feature-select"
 				  ]
 
+	def mode_switch():
+		
+		return daq.ToggleSwitch(
+					id='adjust-mode',
+					className="daq-toggle-switch",
+					value=True,
+					)
 
 	def table_card():
 
 		return html.Div(
 				id="table-container",
-				className="page",
 				children=[dash_table.DataTable(
 									id='table',
 									row_selectable="multi",
@@ -214,34 +221,7 @@ def create_app():
 	                         selected_className="active-tab",
 	                         children=[
 	                         			html.Br(),
-	                         			# html.Div(id="map-select-container",
-	                         			# 		 className="select-container",
-	                         			# 		 children=[
-		                         		# 			html.P(select_headers[0], id='select-header0', className="dropdown-header-text"),
-										# 			dcc.Dropdown(
-				                        #                 id="map-select",
-				                        #                 className="dropdown-select",
-				                        #                 options=["Plotly-imshow","Plotly-datashader, mapbox", "Plotly-datashader, holoviews", "Leaflet and TiTiler", "Mapbox", "DeckGL"],
-				                        #                 value="DeckGL", # "Mapbox", # "Plotly-imshow",
-				                        #                 clearable=False,
-				                        #                 searchable=False,
-				                        #                 multi=False
-				                        #             ),
-
-	                         			# 		 ]
-	                         			# 		 ),
-	                         			
-	                                    # html.P(select_headers[1], id='select-header1', className="dropdown-header-text"),
-										# dcc.Dropdown(
-	                                    #     id="state-select",
-	                                    #     className="dropdown-select",
-	                                    #     options=state_names,
-	                                    #     value=state_names[0],
-	                                    #     clearable=False,
-	                                    #     searchable=False,
-	                                    #     multi=False
-	                                    # ),
-										
+										html.P("Explore pre-compiled technology-specific siting suitability layers", className="guidance-text"), 
 										html.Div(id="tech-select-container",
 	                         					 className="select-container",
 	                         					 children=[
@@ -255,39 +235,6 @@ def create_app():
 				                                    	searchable=False,
 				                                    	multi=False
 				                                    	),
-	                         					 ]
-	                         					 ),
-
-										html.Div(id="year-select-container",
-	                         					 className="select-container",
-	                         					 children=[
-		                         					html.P(select_headers[2], id='select-header2', className="dropdown-header-text"),
-													dcc.Dropdown(
-				                                        id="year-select",
-				                                        className="dropdown-select",
-				                                        options=list(range(2025, 2105, 5)),
-				                                        value=2025,
-				                                        clearable=False,
-				                                        searchable=False,
-				                                        multi=False
-				                                    ),
-
-	                         					 ]
-	                         					 ),
-	                                    
-	                                    html.Div(id="ssp-select-container",
-	                         					 className="select-container",
-	                         					 children=[
-		                         					html.P(select_headers[7], id='select-header7', className="dropdown-header-text"),
-													dcc.Dropdown(
-				                                        id="ssp-select",
-				                                        className="dropdown-select",
-				                                        options=tech_pathways_df["ui_ssp"].unique(), 
-				                                        value=list(tech_pathways_df["ui_ssp"].unique())[0],
-				                                        clearable=False,
-				                                        searchable=False,
-				                                        multi=False
-				                                    ),
 	                         					 ]
 	                         					 ),
 
@@ -368,6 +315,38 @@ def create_app():
 				                                    ),
 	                         					 ]
 	                         					 ),
+																				html.Div(id="year-select-container",
+	                         					 className="select-container",
+	                         					 children=[
+		                         					html.P(select_headers[2], id='select-header2', className="dropdown-header-text"),
+													dcc.Dropdown(
+				                                        id="year-select",
+				                                        className="dropdown-select",
+				                                        options=list(range(2025, 2105, 5)),
+				                                        value=2025,
+				                                        clearable=False,
+				                                        searchable=False,
+				                                        multi=False
+				                                    ),
+
+	                         					 ]
+	                         					 ),
+	                                    
+	                                    html.Div(id="ssp-select-container",
+	                         					 className="select-container",
+	                         					 children=[
+		                         					html.P(select_headers[7], id='select-header7', className="dropdown-header-text"),
+													dcc.Dropdown(
+				                                        id="ssp-select",
+				                                        className="dropdown-select",
+				                                        options=tech_pathways_df["ui_ssp"].unique(), 
+				                                        value=list(tech_pathways_df["ui_ssp"].unique())[0],
+				                                        clearable=False,
+				                                        searchable=False,
+				                                        multi=False
+				                                    ),
+	                         					 ]
+	                         					 ),
 	                                    
 	                         ]
 	                         )
@@ -378,8 +357,21 @@ def create_app():
 							   selected_className="active-tab",
 							   children=[
 							   		html.Br(),
-								    table_card(),
-								    layer_metadata_card()
+									html.P("Explore individual layers in the database", className="guidance-text"), 
+									html.Br(),
+									dcc.Dropdown(
+											id='multi-layer-dropdown',
+											className="dropdown-select",
+											options=[
+												{'label': 'Option 1', 'value': 'option1'},
+												{'label': 'Option 2', 'value': 'option2'},
+												{'label': 'Option 3', 'value': 'option3'}
+											],
+											value=['option1'],  # Initial selected values
+											multi=True
+										),
+								    # table_card(),
+								    # layer_metadata_card()
 							   ]
 							   )
 
@@ -502,30 +494,33 @@ def create_app():
 
 		return html.Div(
 						children=[
-						dcc.Checklist(
-								id='layer-selector',
-								options=[
-									{'label': 'Basemap Ocean', 'value': 'base-map-ocean'}, # AB: need to predfine the database 
-									{'label': 'Basemap Land', 'value': 'base-map'}, 
-									{'label': 'Feasibility Layer', 'value': 'feasibility-layer'}, 
-								],
-								value=["base-map-ocean", "base-map"],  # Default selected layers
-								inline=True,
-								style={'display': 'none'}
-							),
-						dcc.Loading(
-								id="loading",
-								type="circle",
-								# style={"backgroundColor": "transparent"},
-								children=[
-									html.Div(
-									id="map",
-									className="map-column",
+							dcc.Loading(
+									id="loading",
+									type="circle",
+									# style={"backgroundColor": "transparent"},
 									children=[
-										]
-									)
-								]
-						)
+										html.Div(
+										id="map",
+										className="map-column",
+										children=[
+											]
+										)
+									]
+							),
+							about(),
+							nav(),
+							mode_switch(),
+							dcc.Checklist(
+									id='layer-selector',
+									options=[
+										{'label': 'Basemap Ocean', 'value': 'base-map-ocean'}, # AB: need to predfine the database 
+										{'label': 'Basemap Land', 'value': 'base-map'}, 
+										{'label': 'Feasibility Layer', 'value': 'feasibility-layer'}, 
+									],
+									value=["base-map-ocean", "base-map", "feasibility-layer"],  # Default selected layers
+									inline=True,
+									# style={'display': 'none'}
+								),
 						]
 		)
 
@@ -583,9 +578,9 @@ def create_app():
 				className="page",
 				children=[
 
-						   about(),
+						#    about(),
 						   map(),
-						   nav(),
+						#    nav(),
 						]
 					)
 
@@ -596,7 +591,7 @@ def create_app():
 									# dcc.Store(id='results'),
 									header_card(),
 									page_card(),
-									footer_card(),
+									# footer_card(),
 							],
 						)
 

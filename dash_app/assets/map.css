@@ -1,55 +1,24 @@
 #deck-gl {
+    /* left: auto !important; */
+    /* top: auto !important; */
+}
+
+#deckgl-wrapper {
     /* height: 50% !important; */
     /* width: 50% !important; */
     left: auto !important;
     top: auto !important;
-}
-
-#deckgl-wrapper {
-    height: 50% !important;
-    width: 50% !important;
-    left: auto !important;
-    top: auto !important;
     position: relative !important;
-    /* position: relative !important; */
     z-index: 1 !important;
-    height: calc(100vh - 85px) !important;
-    width: calc(150vh - 5px) !important;
-    margin-left: -100px !important;
-    /* width: 1300px;
-    /* background-color: white !important; */
+    height: var(--body--height) !important; /* Adjust width based on viewport height */
+    width: calc(100vw - 0px) !important; /* Adjust width based on viewport width */
+    /* width: 100% !important; */
+    /* margin-left: -100px !important; */
+    /* border: 1px solid red; */
+    /* Can change "space" color: */
+    /* background-color: black !important; */
 }
 
-#energy-map {
-    margin-top: -5px;
-    height: calc(100vh - 80px);
-    /* margin-left:; */
-/*    margin-bottom: -5px !important;*/
-/*    height: 700px; */
-/*    800*/
-    width: 1300px;
+.dash-loading .dash-loading-content {
+    background-color: transparent; /* Make loading content background transparent */
 }
-
-#energy-map2 {
-    margin-top: -5px;
-/*    height: 700px; */
-/*    800*/
-    width: 1300px;
-}
-
-#energy-map3 {
-    margin-top: -50px;
-    height: 1000px !important;
-    margin-right: -50px;
-    margin-left: -50px;
-    /* height: calc(100vh - 80px); */
-    /* margin-left:; */
-/*    margin-bottom: -5px !important;*/
-/*    height: 700px; */
-/*    800*/
-    /* width: 1300px; */
-}
-
-/* .loader-wrapper > div {
-    visibility: visible !important;
-} */

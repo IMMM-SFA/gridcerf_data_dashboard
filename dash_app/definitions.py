@@ -7,7 +7,7 @@ import os
 PORT = int(os.environ.get("PORT", 8060))
 REQUESETS_PATHNAME_PREFIX = "/"
 
-CONNECT_TO_LAMBDA = True
+CONNECT_TO_LAMBDA = False
 
 # FILE PATHS
 if CONNECT_TO_LAMBDA:

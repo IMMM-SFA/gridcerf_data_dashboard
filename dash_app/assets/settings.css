@@ -1,0 +1,16 @@
+#adjust-mode {
+    z-index: 2;
+    overflow-y: scroll;
+    background-color: var(--soft--grey);
+    position: absolute; /* Positioning it relative to the parent */
+    top: 0;
+    right: 0;
+    margin-top: 60px;
+    margin-right: 270px;
+    background: transparent;
+}
+
+/* #adjust-mode > div > div > div:nth-child(2) > button{
+    background-color: white;
+    color: white;
+} */
