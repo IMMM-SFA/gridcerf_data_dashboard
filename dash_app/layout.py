@@ -152,7 +152,7 @@ def create_app():
 		return daq.ToggleSwitch(
 					id='adjust-mode',
 					className="daq-toggle-switch",
-					value=True,
+					value=False,
 					)
 
 	def table_card():
@@ -489,6 +489,34 @@ def create_app():
 				],
 			)
 
+	def map_selector():
+		return html.Div([
+					html.Div('button1', id='last-btn-pressed', style={'display': 'none'}),
+					html.Div(id='map-selector',
+							 children=[
+								html.Button(
+									children=[
+										# html.Img(id="globe_preview", src=app.get_asset_url("previews/globe_preview.png")),
+										html.Img(id="globe_preview", src=app.get_asset_url("icons/map_icons/globe-thicker.svg")),
+										# html.P('Globe', className="button-text")
+									],
+									id='button1',
+									className='button-selected',  # Initially selected
+									n_clicks=1
+								),
+						html.Button(
+							children=[
+								# html.Img(id="flat_preview", src=app.get_asset_url("previews/2d_preview.png")),
+								html.Img(id="flat_preview", src=app.get_asset_url("icons/map_icons/map-final.svg")),
+								# html.P('2D Map', className="button-text")
+							],
+							id='button2',
+							className='button',
+							n_clicks=0
+						)
+					], 
+					),
+				])
 
 	def map():
 
@@ -510,6 +538,7 @@ def create_app():
 							about(),
 							nav(),
 							mode_switch(),
+							map_selector(),
 							dcc.Checklist(
 									id='layer-selector',
 									options=[
@@ -530,33 +559,35 @@ def create_app():
 	def about():
 
 		return html.Div(
-						id="about",
-						className="about-column",
+						id="expandable-box",
+						className="about",
 						children=[
+							html.Button("X", id="close-button"),
+							html.Div(id='intro', 
+									children=[
+											html.P(title_text, id='title', className="title-text"),
+											html.P(description_text, id='description-text', className="page-text"), 
+											html.P(section_headers[0], id='header0', className="header-text"),
+											html.Hr(className="hr"),
+											html.P(overview_text, id='overview-text', className="page-text"),
+											html.P(overview_text2, id='overview-text2', className="page-text"),
+											html.A(overview_text3, href="https://doi.org/10.57931/2281697", target="_blank", id='overview-text3', className="page-text"),
+											html.Br(),
+											html.Br(),
 
-						html.Div(id='intro', 
-	                            children=[html.P(title_text, id='title', className="title-text"),
-	                                      html.P(description_text, id='description-text', className="page-text"), 
-	                                      html.P(section_headers[0], id='header0', className="header-text"),
-	                                      html.Hr(className="hr"),
-	                                      html.P(overview_text, id='overview-text', className="page-text"),
-										  html.P(overview_text2, id='overview-text2', className="page-text"),
-										  html.A(overview_text3, href="https://doi.org/10.57931/2281697", target="_blank", id='overview-text3', className="page-text"),
-										  html.Br(),
-										  html.Br(),
-
-	                                      # html.P(overview_text_cont, id='overview-text-cont', className="page-text"),
-	                                    #   html.P(section_headers[1], id='header1', className="header-text"),
-	                                      html.P(section_headers[2], id='header2', className="header-text"),
-	                                      html.Hr(className="hr"),
-	                                      html.P(funding_text, id='funding-text', className="page-text"),
-	                                      # html.Label([html.P("Download the contributing", id="shorttext1"),
-	                                      #               html.A('papers', href='https://gdr.openei.org/submissions/1473', id='hyperlink1'),
-	                                      #               html.P("and", id="shorttext2"),
-	                                      #               html.A('code', href='https://github.com/pnnl/GeoCLUSTER', id='hyperlink2'),
-	                                      #               html.P(".", id="shorttext3"),
-	                                      #               ], id='ab-note4')
-	                    ]),
+											# html.P(overview_text_cont, id='overview-text-cont', className="page-text"),
+											#   html.P(section_headers[1], id='header1', className="header-text"),
+											html.P(section_headers[2], id='header2', className="header-text"),
+											html.Hr(className="hr"),
+											html.P(funding_text, id='funding-text', className="page-text"),
+											# html.Label([html.P("Download the contributing", id="shorttext1"),
+											#               html.A('papers', href='https://gdr.openei.org/submissions/1473', id='hyperlink1'),
+											#               html.P("and", id="shorttext2"),
+											#               html.A('code', href='https://github.com/pnnl/GeoCLUSTER', id='hyperlink2'),
+											#               html.P(".", id="shorttext3"),
+											#               ], id='ab-note4')
+							]
+							),
 						]
 			)
 

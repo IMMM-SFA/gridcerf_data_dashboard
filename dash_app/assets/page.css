@@ -53,18 +53,48 @@ body {
     height: var(--body--height);
 }
 
-#about {
-    width: 310px;
+
+
+
+#expandable-box {
     z-index: 2;
     overflow-y: scroll;
     background-color: var(--soft--grey);
     position: absolute; /* Positioning it relative to the parent */
-    top: 0;
+    top: 10px;
     left: 0;
-    width: 250px; /* Set the desired width */
+    width: 270px;
     margin-top: 50px;
-    height: var(--body--height);
+    /* height: var(--body--height); */
+    height: calc(100vh - 70px);
+    margin-left: 15px;
+    /* margin-bottom: 10px; */
+    border-radius: 10px;
+    cursor: pointer;
+    transition: width 0.3s, height 0.3s;
 }
+
+#intro {
+    /* position: absolute; */
+    padding: 10px;
+    top: 5px;
+    right: 5px; 
+    display: block !important;
+}
+
+.close-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: transparent;
+    color: black;
+    border: none;
+    cursor: pointer;
+    display: none;  /* Hidden initially */
+}
+
+
+
 
 #insights-tab, #layers-tab {
     background-color: var(--blue);

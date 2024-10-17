@@ -7,31 +7,12 @@ app = dash.Dash(__name__)
 app.layout = html.Div([
     html.Div(
         id="expandable-box",
-        style={
-            "width": "20px",
-            "height": "20px",
-            "backgroundColor": "lightgray",
-            "cursor": "pointer",
-            "transition": "width 0.3s, height 0.3s",
-            "border": "1px solid black",
-            "position": "relative"  # Position relative for the close button
-        },
         n_clicks=0,
         children=[
             # Close button will be added here
-            html.Button("X", id="close-button", style={
-                "position": "absolute",
-                "top": "5px",
-                "right": "5px",
-                "backgroundColor": "red",
-                "color": "white",
-                "border": "none",
-                "cursor": "pointer",
-                "display": "none"  # Hidden initially
-            })
+            html.Button("X", id="close-button")
         ]
     ),
-    html.Div("Click the box to expand!", style={"margin-top": "10px"})
 ])
 
 @app.callback(

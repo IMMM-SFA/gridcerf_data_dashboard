@@ -10,6 +10,8 @@ REQUESETS_PATHNAME_PREFIX = "/"
 CONNECT_TO_LAMBDA = False
 
 # FILE PATHS
+MAPBOX_TOKEN = open("../../mapbox_token.py").read() # mapbox api token
+
 if CONNECT_TO_LAMBDA:
 
     # https://gridcerf.dev.msdlive.org/

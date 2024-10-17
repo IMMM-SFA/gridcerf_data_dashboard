@@ -114,13 +114,13 @@ def open_as_raster(TIFPATH, is_reproject=False, is_convert_to_png=False):
 		TIF_content = get_bytes(DATASET_ID, TIFPATH)  # reading the retrieved file from the S3 bucket  
 		TIF_stream = BytesIO(TIF_content) # wrap the file content in a BytesIO object for use like a file
 	
-	print(f"{TIF_source}: {TIF_stream}\n")
+	# print(f"{TIF_source}: {TIF_stream}\n") ### Uncomment
 
 	array, data_df, transform, source_crs, units_crs, source_bbox = read_TIF_metadata(TIF_stream=TIF_stream)
 	source_bbox = [[24.9493, -125.00165], [49.59037, -66.93457]] # bounds of the United States, not considering off shore
 	# source_bbox = [[19.94822477183972, -134.3417298122159], [52.7538229058337, -60.14850035217076]]
 
-	print(f"Data is in {source_crs} and its shape is {array.shape}")
+	# print(f"Data is in {source_crs} and its shape is {array.shape}") ### Uncomment
 
 	# WGS84 (aka.  Albers Equal) || destination_proj
 	geo_crs = CRS(WEB_CRS)
@@ -133,7 +133,7 @@ def open_as_raster(TIFPATH, is_reproject=False, is_convert_to_png=False):
 																	  source_crs=source_crs, 
 																	  geo_crs=geo_crs
 																	)
-		print(f"Data is now in {geo_crs} and its shape is {array.shape}")
+		# print(f"Data is now in {geo_crs} and its shape is {array.shape}") ### Uncomment
 		bbox = proj_bbox
 	else: 
 		df_coors_long = []
@@ -151,7 +151,7 @@ def open_as_raster(TIFPATH, is_reproject=False, is_convert_to_png=False):
 	
 	array[array == 1] = np.nan
 
-	print(f"Bounding Box: {bbox}")
+	# print(f"Bounding Box: {bbox}") ### Uncomment
 
 	with rasterio.open(TIF_stream) as src:
 		transform = src.transform

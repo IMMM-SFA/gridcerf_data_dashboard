@@ -16,6 +16,7 @@ optimized for large datasets.
 Ensure your data is in an efficient format (like Parquet or GeoJSON) for faster loading 
 and processing. Preprocess your data to reduce its size, if possible
 """
+
 # standard libraries
 import os
 import json
@@ -26,14 +27,17 @@ from dash import html
 import dash_deck
 import pydeck
 import numpy as np
+# import geopandas as gpd
+import pandas as pd
+pd.options.mode.chained_assignment = None
 
 # SOURCED SCRIPTS
 from src.reader import open_as_raster
 from layout import cache
-from definitions import OUTDIR
+from definitions import OUTDIR, MAPBOX_TOKEN
 
 @cache.memoize(timeout=7200)  # Cache for 2 hours 
-def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode):
+def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode, is_globe):
 
     if layer_name == "base-map-ocean":
 
@@ -42,7 +46,8 @@ def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode):
         # #D4DADC and RBG is 212, 218, 220
 
         if adjust_mode:  # When the switch is "True"
-            fill_color = [212, 218, 220] # light grey
+            # fill_color = [212, 218, 220] # light grey
+            fill_color = [116, 206, 240]
         else:
             fill_color = [0, 31, 72] # dark blue
             
@@ -73,7 +78,7 @@ def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode):
                         stroked=False,
                         filled=True,
                         get_line_color=[60, 60, 60],
-                        get_fill_color=[250, 250, 248] # near white
+                        get_fill_color=[228, 235, 194] #[250, 250, 248] # near white
                     )
         else:
             return pydeck.Layer(
@@ -87,6 +92,8 @@ def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode):
                     )
     
     if layer_name == "feasibility-layer":
+        
+        # Got it down from 20 seconds to to 5-7 seconds just by using pandas CSV file
 
         TIFPATH = os.path.join(COMPILED_DIR, fpaths[0])
         data_df, array, source_crs, geo_crs, df_coors_long, boundingbox, img = open_as_raster(TIFPATH=TIFPATH, is_reproject=True, is_convert_to_png=False)
@@ -97,13 +104,16 @@ def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode):
             url_path = "/assets/icons/map_icons/fuchsia_square.svg"
 
         icon_data = {
-            "url": "/assets/icons/map_icons/blue_square.svg", # svg repo
+            "url": "/assets/icons/map_icons/fuchsia_square.svg", # svg repo
             "width": 242,
             "height": 242,
             "anchorY": 121, # set to 0 if want to position it at the bottom center of the icon
             "anchorX": 121, # center of X
+            # 'color': [255, 0, 255],  # Bright fuchsia -- doesn't work
         }
 
+        df_coors_long["icon_data"] = np.where(df_coors_long.index >= 0, icon_data, None)
+         
         df_coors_long["icon_data"] = np.where(df_coors_long.index >= 0, icon_data, None)
         df_coors_long["Angle"] = np.where(df_coors_long["LongitudeProj"] <= -121, 15,
                      np.where(df_coors_long["LongitudeProj"].between(-121, -118), 13,
@@ -116,12 +126,21 @@ def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode):
                      np.where(df_coors_long["LongitudeProj"].between(-82, -76), -10,
                      np.where(df_coors_long["LongitudeProj"] > -76, -15, 0))))))))))
 
+        # df_save = df_coors_long[["IsFeasible", "LongitudeProj", "LatitudeProj", "icon_data","Angle"]]
+        # df_save.to_csv("/Users/bern700/git_repositories/IMMM-SFA/gridcerf_data_dashboard/dash_app/my_geodata.csv", index=False)
+        # df_coors_long = pd.read_csv('/Users/bern700/git_repositories/IMMM-SFA/gridcerf_data_dashboard/dash_app/my_geodata.csv')
+
+        if is_globe:
+            get_size = 1150
+        else:
+            get_size = 1750
+        
         return pydeck.Layer(
                     id="feasibility-layer",
                     type="IconLayer",
                     data=df_coors_long,
                     get_icon="icon_data",
-                    get_size=1150, # or 120 if you want best coverage
+                    get_size=get_size,#1150, # or 120 if you want best coverage
                     size_units="meters",
                     # size_scale=1,
                     # iconAtlas: 'path/to/icon-atlas.png', ?
@@ -154,7 +173,7 @@ def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode):
                 )
 
 
-def plot_deckgl_map(COMPILED_DIR, fpaths, selected_layers, adjust_mode):
+def plot_deckgl_globe(COMPILED_DIR, fpaths, selected_layers, adjust_mode):
 
     view_state = pydeck.ViewState(latitude=39.8283, longitude=-98.5795, # center U.S.
                                   zoom=2,
@@ -166,7 +185,7 @@ def plot_deckgl_map(COMPILED_DIR, fpaths, selected_layers, adjust_mode):
     deck_layers = []
 
     for layer in selected_layers:
-        layer = load_large_data(layer, COMPILED_DIR, fpaths, adjust_mode)  # Load data, cached if previously loaded
+        layer = load_large_data(layer, COMPILED_DIR, fpaths, adjust_mode, is_globe=True)  # Load data, cached if previously loaded
         deck_layers.append(layer)
 
     r = pydeck.Deck(
@@ -229,3 +248,81 @@ def plot_deckgl_map(COMPILED_DIR, fpaths, selected_layers, adjust_mode):
         )
 
     return mapgl
+
+
+def plot_deckgl_map(COMPILED_DIR, fpaths, selected_layers, adjust_mode):
+
+    view_state = pydeck.ViewState(latitude=39.8283, longitude=-98.5795, zoom=4)
+    # view = pydeck.View(type="_GlobeView", controller=True, width="100%", height="100%") # width=1000, height=700
+
+    deck_layers = []
+
+    selected_layers = ["feasibility-layer"]
+    for layer in selected_layers:
+        layer = load_large_data(layer, COMPILED_DIR, fpaths, adjust_mode, is_globe=False)  # Load data, cached if previously loaded
+        deck_layers.append(layer)
+
+    if adjust_mode: # if true
+        r = pydeck.Deck(
+            initial_view_state=view_state,
+            map_style="mapbox://styles/mapbox/outdoors-v11", # this is like streets
+            layers=deck_layers[0],
+        )
+        
+    else:
+        r = pydeck.Deck(
+            # views=[view],
+            initial_view_state=view_state,
+            # all of them here https://docs.mapbox.com/api/maps/styles/
+            # map_style=pydeck.map_styles.LIGHT, # works
+            # map_style=pydeck.map_styles.DARK, # works
+            # map_style="mapbox://styles/mapbox/light-v10",
+            # map_style="mapbox://styles/mapbox/streets-v11",
+            # map_style="mapbox://styles/mapbox/dark-v10",
+            map_style="mapbox://styles/mapbox/satellite-streets-v11",
+            # map_style="mapbox://styles/mapbox/satellite-v9", # not useful but works
+            # map_style="mapbox://styles/mapbox/outdoors-v11", # this is like streets
+            # map_style="mapbox://styles/mapbox/navigation-day-v1",
+            # map_style="mapbox://styles/mapbox/navigation-night-v1",
+            layers=deck_layers[0],
+            # parameters={"cull": True},
+        ) 
+
+    mapgl = html.Div(
+        dash_deck.DeckGL(
+            r.to_json(), 
+            id="deck-gl", 
+            # tooltip=tooltip, 
+            mapboxKey=MAPBOX_TOKEN
+    )
+    )
+
+    # if adjust_mode:
+    #     mapgl = html.Div(
+    #     dash_deck.DeckGL(
+    #         json.loads(r.to_json()),
+    #         id="deck-gl",
+    #         # style={"background-color": "white"},
+    #         )
+    #     )
+    # else:
+    #     mapgl = html.Div(
+    #     dash_deck.DeckGL(
+    #         json.loads(r.to_json()),
+    #         id="deck-gl",
+    #         # style={"background-color": "black"},
+    #         )
+    #     )
+
+    return mapgl
+
+
+# didn't work
+        # map_style="mapbox://styles/mapbox/standard",
+        # map_style="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        # map_style=pydeck.map_styles.SATELLITE,
+        # map_style=pydeck.map_styles.SATELLITE, # does not work
+        # map_style=pydeck.map_styles.STREETS, # does not exist
+        # map_style=pydeck.map_styles.OUTDOORS, # does not exist
+        # map_style=pydeck.map_styles.TRAFFIC, #  does not exist
+        # map_style="mapbox://styles/mapbox/light-v10",

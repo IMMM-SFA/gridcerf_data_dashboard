@@ -14,7 +14,7 @@ import yaml
 
 ## web visualization and interactive libraries
 from dash.dependencies import Input, Output, State
-from dash import Dash, html
+from dash import Dash, html, callback_context
 from dash import ctx
 from dash.exceptions import PreventUpdate
 from dash import dcc
@@ -26,7 +26,7 @@ if CONNECT_TO_LAMBDA:
 	from io import BytesIO
 
 from src.reader import open_as_raster
-from src.deckgl import plot_deckgl_map
+from src.deckgl import plot_deckgl_globe, plot_deckgl_map
 from layout import app, tech_pathways_df, src_meta, all_options
 
 # -----------------------------------------------------------------------------
@@ -152,7 +152,8 @@ def show_hide_element(feature, is_ccs, cooling, capacity_factor):
 
 
 @app.callback(
-    Output(component_id="map", component_property="children"),
+    [Output(component_id="map", component_property="children"),
+	 Output('last-btn-pressed', 'children')],
     [
 	Input(component_id="year-select", component_property="value"),
 	Input(component_id="ssp-select", component_property="value"),
@@ -163,22 +164,26 @@ def show_hide_element(feature, is_ccs, cooling, capacity_factor):
 	Input(component_id="cooling-type-select", component_property="value"), 
 	Input(component_id="capacity-factor-select", component_property="value"),
 	Input(component_id="layer-selector", component_property="value"),
-	Input('adjust-mode', 'value')
+	Input('adjust-mode', 'value'),
+	Input('button1', 'n_clicks'),
+	Input('button2', 'n_clicks'),
+	Input('last-btn-pressed', 'children')
     ],
 )
 
 def map(year, ssp,
 		tech, subtech, feature,
-		is_ccs, coolingtype, capacity_factor, selected_layers, adjust_mode):
+		is_ccs, coolingtype, capacity_factor, selected_layers, 
+		adjust_mode, btn1, btn2, last_pressed):
 
     # -----------------------------------------------------------------------------
     # Creates and displays map by querying a "database" table of all pathways
     # to their filenames.
     # -----------------------------------------------------------------------------
 
-	print(" --------------------------------------------------------------- ")
+	# print(" --------------------------------------------------------------- ")
 	year = str(year)
-	print([ssp, year, tech, subtech, feature, is_ccs, coolingtype, capacity_factor])
+	# print([ssp, year, tech, subtech, feature, is_ccs, coolingtype, capacity_factor])
 	query_df = tech_pathways_df.query("ui_ssp in @ssp and \
 									   ui_year in @year and \
 									   ui_tech in @tech and \
@@ -197,9 +202,43 @@ def map(year, ssp,
 	# 	i += 1
 
 	# DeckGL
-	fig_div = plot_deckgl_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, adjust_mode=adjust_mode)
+	ctx = callback_context # there are multiple callback contextes in this  
+
+	if ctx.triggered:
 		
-	return fig_div
+		clicked_id = ctx.triggered[0]['prop_id'].split('.')[0]
+		# print(ctx.triggered)
+
+		# if adjust_mode:
+		clicked_id_ = clicked_id + "-" + last_pressed
+		# "button2-True"
+		# "button2-False"
+		# "adjust-mode-True"
+		# "adjust-mode-False"
+
+
+		# clicked_id == adjust-mode from light to dark then need go into button2
+		if clicked_id == 'button1':
+			fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, adjust_mode=adjust_mode)
+			last_pressed = "button1"
+		# elif clicked_id_ == 'adjust-mode-button1':
+		# 	fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, adjust_mode=adjust_mode)
+		# 	last_pressed = "button1"
+		elif clicked_id == 'button2':
+			fig_div = plot_deckgl_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, adjust_mode=adjust_mode)
+			last_pressed = "button2"
+		elif clicked_id_ == "adjust-mode-button2":
+			fig_div = plot_deckgl_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, adjust_mode=adjust_mode)
+			last_pressed = "button2"
+		else:
+			# default (or if fails all other options it will become a globe) 
+			fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, adjust_mode=adjust_mode)
+			last_pressed = "button1"
+	else:
+		fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, adjust_mode=adjust_mode)
+		last_pressed = "button1"
+
+	return fig_div, last_pressed
 
 
 # @app.callback(
@@ -330,6 +369,101 @@ def update_mode(value):
 			# "background-color": "rgba(0, 0, 0, 0.1)" # rgba(0, 0, 0, 0.5)
 		}
 		return header_banner, app_logo, page_body
+
+
+# Callback to update output based on selection
+@app.callback(
+    [
+	#  Output('output-container', 'children'),
+     Output('button1', 'className'),
+     Output('button2', 'className')
+	 ],
+    [Input('button1', 'n_clicks'),
+     Input('button2', 'n_clicks')]
+)
+def update_output(n_clicks1, n_clicks2):
+
+	ctx = callback_context
+
+	if ctx.triggered:
+			
+		clicked_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
+		if clicked_id == 'button1':
+			return 'button-selected', 'button'
+		elif clicked_id == 'button2':
+			return 'button', 'button-selected'
+	else:
+		return "button-selected", "button"
+
+# Custom CSS for buttons
+# app.css.append_css({
+#     'external_url': 'https://codepen.io/anon/pen/yLyzPZ.css'  # Use your own CSS file if needed
+# })
+
+@app.callback(
+    Output("expandable-box", "style"),
+    Output("expandable-box", "children"),
+    Input("expandable-box", "n_clicks"),
+    Input("close-button", "n_clicks"),
+)
+def toggle_expand(expand_clicks, close_clicks):
+	# If the close button is clicked
+	print(expand_clicks)
+	print(close_clicks)
+
+	if close_clicks:
+		return (
+			{
+				"width": "40px",
+				"height": "40px",
+				"transition": "width 0.3s, height 0.3s",
+			},
+			[html.Button("X", id="close-button", style={
+				"position": "absolute",
+				"top": "5px",
+				"right": "5px",
+				"backgroundColor": "red",
+				"color": "white",
+				"border": "none",
+				"display": "none"  # Hidden when collapsed
+			})]  # Keep the button but hidden
+		)
+
+	# If the box is clicked to expand
+	if expand_clicks:
+		return (
+			{
+				"cursor": "pointer",
+				"transition": "width 0.3s, height 0.3s",
+				"border-radius": "25px"
+			},
+			[html.Button("X", id="close-button", 
+			style={
+				"position": "absolute",
+				"top": "5px",
+				"right": "5px",
+				"border": "none",
+				"display": "block"  # Show the close button when expanded
+			})]  # Close button in expanded state
+		)
+
+	# Keep the small size if not clicked
+	# Default state: collapsed
+	return (
+		{
+			"width": "40px",
+			"height": "40px",
+			"transition": "width 0.3s, height 0.3s",
+		},
+		[html.Button("X", id="close-button", style={
+			"position": "absolute",
+			"top": "5px",
+			"right": "5px",
+			"border": "none",
+			"display": "none"  # Hidden when collapsed
+		})]  # Keep the button but hidden
+	)
 
 # -----------------------------------------------------------------------------
 # App runs here. Define configurations, proxies, etc.
