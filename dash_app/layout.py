@@ -47,6 +47,69 @@ all_options = tech_pathways_dict ## sourced
 # Dash app layout begins here.
 # -----------------------------------------------------------------------------
 
+section_headers = ["Overview", "Authors", "Funding"]
+
+title_text = """Geospatial Raster Input Data for Capacity Expansion Regional Feasibility (GRIDCERF) Version 2.0"""
+
+description_text = """A high-resolution energy mapper for exploring the siting suitability of renewable 
+						and non-renewable power plants in the contiguous United States."""
+
+overview_text = """The GRIDCERF database is a high-resolution product to evaluate siting suitability for renewable 
+					and non-renewable power plants in the conterminous United States. GRIDCERF offers hundreds of 
+					individual suitability layers for use with both renewable and non-renewable power plant 
+					technology configurations in a harmonized format that can be easily ingested by 
+					geospatially-enabled modeling software. 
+					"""
+
+overview_text2 = """ GRIDCERF data can be directly used with the power plant siting model CERF 
+					(Capacity Expansion Regional Feasibility) to site power plants at a 1km2 resolution."""
+
+overview_text3 = """Download the data."""
+
+author_text = """GRIDCERF represents the extensive collection of data formatting, processing, and visualization 
+					created by the IM3 Group."""
+
+funding_text = """This research was funded by the U.S. Department of Energy, Office of Science, as part of 
+					research in MultiSector Dynamics, Earth and Environmental Systems Modeling Program."""
+
+
+
+# no Alaska, Hawaii
+state_names = ["Alabama", "Arkansas", "American Samoa", "Arizona", "California", 
+				"Colorado", "Connecticut", "District ", "of Columbia", "Delaware", "Florida", 
+				"Georgia", "Guam", "Iowa", "Idaho", "Illinois", "Indiana", "Kansas", 
+				"Kentucky", "Louisiana", "Massachusetts", "Maryland", "Maine", "Michigan", 
+				"Minnesota", "Missouri", "Mississippi", "Montana", "North Carolina", 
+				"North Dakota", "Nebraska", "New Hampshire", "New Jersey", "New Mexico", "Nevada", 
+				"New York", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico", "Rhode Island", 
+				"South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Virginia", 
+				"Virgin Islands", "Vermont", "Washington", "Wisconsin", "West Virginia", "Wyoming"]
+
+tabs = ["", "insights-tab", "layers-tab"]
+
+select_headers = ["Select a visualization tool", 
+					"Select a state", 
+					"Select a year", 
+					"Select a technology",
+					"Select a technology sub-type",
+					"Carbon Capture Sequestration (CCS)",
+					"Select a Cooling Type", 
+					"Select a Shared Socioeconomic Pathway (SSP)", #  Select a socioeconomic scenario
+					"Select a feature",
+					"Select a Class" # Capacity Factor (CF)
+					]
+
+select_ids = ["map-select",
+				"state-select",
+				"year-select",
+				"tech-select",
+				"subtech-select",
+				"carbon-capture-select",
+				"cooling-type-select",
+				"feature-select"
+				]
+
+
 def create_app():
 	server = Flask(__name__)
 	Compress(server)
@@ -86,66 +149,6 @@ def create_app():
 	# -----------------------------------------------
 	# HTML components.
 	# -----------------------------------------------
-
-	# no Alaska, Hawaii
-	state_names = ["Alabama", "Arkansas", "American Samoa", "Arizona", "California", 
-					"Colorado", "Connecticut", "District ", "of Columbia", "Delaware", "Florida", 
-					"Georgia", "Guam", "Iowa", "Idaho", "Illinois", "Indiana", "Kansas", 
-					"Kentucky", "Louisiana", "Massachusetts", "Maryland", "Maine", "Michigan", 
-					"Minnesota", "Missouri", "Mississippi", "Montana", "North Carolina", 
-					"North Dakota", "Nebraska", "New Hampshire", "New Jersey", "New Mexico", "Nevada", 
-					"New York", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico", "Rhode Island", 
-					"South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Virginia", 
-					"Virgin Islands", "Vermont", "Washington", "Wisconsin", "West Virginia", "Wyoming"]
-
-	tabs = ["", "insights-tab", "layers-tab"]
-
-	section_headers = ["Overview", "Authors", "Funding"]
-
-	title_text = """Geospatial Raster Input Data for Capacity Expansion Regional Feasibility (GRIDCERF) Version 2.0"""
-
-	description_text = """A high-resolution energy mapper for exploring the siting suitability of renewable 
-							and non-renewable power plants in the contiguous United States."""
-
-	overview_text = """The GRIDCERF database is a high-resolution product to evaluate siting suitability for renewable 
-						and non-renewable power plants in the conterminous United States. GRIDCERF offers hundreds of 
-						individual suitability layers for use with both renewable and non-renewable power plant 
-						technology configurations in a harmonized format that can be easily ingested by 
-						geospatially-enabled modeling software. 
-						"""
-	
-	overview_text2 = """ GRIDCERF data can be directly used with the power plant siting model CERF 
-						(Capacity Expansion Regional Feasibility) to site power plants at a 1km2 resolution."""
-
-	overview_text3 = """Download the data."""
-
-	author_text = """GRIDCERF represents the extensive collection of data formatting, processing, and visualization 
-					 created by the IM3 Group."""
-
-	funding_text = """This research was funded by the U.S. Department of Energy, Office of Science, as part of 
-						research in MultiSector Dynamics, Earth and Environmental Systems Modeling Program."""
-
-	select_headers = ["Select a visualization tool", 
-					  "Select a state", 
-					  "Select a year", 
-					  "Select a technology",
-					  "Select a technology sub-type",
-					  "Carbon Capture Sequestration (CCS)",
-					  "Select a Cooling Type", 
-					  "Select a Shared Socioeconomic Pathway (SSP)", #  Select a socioeconomic scenario
-					  "Select a feature",
-					  "Select a Class" # Capacity Factor (CF)
-					  ]
-
-	select_ids = ["map-select",
-				  "state-select",
-				  "year-select",
-				  "tech-select",
-				  "subtech-select",
-				  "carbon-capture-select",
-				  "cooling-type-select",
-				  "feature-select"
-				  ]
 
 	def mode_switch():
 		
@@ -553,8 +556,31 @@ def create_app():
 						]
 		)
 
+	# intro = html.Div(id='intro', 
+	# 			children=[
+	# 					html.P(title_text, id='title', className="title-text"),
+	# 					html.P(description_text, id='description-text', className="page-text"), 
+	# 					html.P(section_headers[0], id='header0', className="header-text"),
+	# 					html.Hr(className="hr"),
+	# 					html.P(overview_text, id='overview-text', className="page-text"),
+	# 					html.P(overview_text2, id='overview-text2', className="page-text"),
+	# 					html.A(overview_text3, href="https://doi.org/10.57931/2281697", target="_blank", id='overview-text3', className="page-text"),
+	# 					html.Br(),
+	# 					html.Br(),
 
-    
+	# 					# html.P(overview_text_cont, id='overview-text-cont', className="page-text"),
+	# 					#   html.P(section_headers[1], id='header1', className="header-text"),
+	# 					html.P(section_headers[2], id='header2', className="header-text"),
+	# 					html.Hr(className="hr"),
+	# 					html.P(funding_text, id='funding-text', className="page-text"),
+	# 					# html.Label([html.P("Download the contributing", id="shorttext1"),
+	# 					#               html.A('papers', href='https://gdr.openei.org/submissions/1473', id='hyperlink1'),
+	# 					#               html.P("and", id="shorttext2"),
+	# 					#               html.A('code', href='https://github.com/pnnl/GeoCLUSTER', id='hyperlink2'),
+	# 					#               html.P(".", id="shorttext3"),
+	# 					#               ], id='ab-note4')
+	# 	]
+	# 	)
 
 	def about():
 
@@ -562,32 +588,8 @@ def create_app():
 						id="expandable-box",
 						className="about",
 						children=[
-							html.Button("X", id="close-button"),
-							html.Div(id='intro', 
-									children=[
-											html.P(title_text, id='title', className="title-text"),
-											html.P(description_text, id='description-text', className="page-text"), 
-											html.P(section_headers[0], id='header0', className="header-text"),
-											html.Hr(className="hr"),
-											html.P(overview_text, id='overview-text', className="page-text"),
-											html.P(overview_text2, id='overview-text2', className="page-text"),
-											html.A(overview_text3, href="https://doi.org/10.57931/2281697", target="_blank", id='overview-text3', className="page-text"),
-											html.Br(),
-											html.Br(),
-
-											# html.P(overview_text_cont, id='overview-text-cont', className="page-text"),
-											#   html.P(section_headers[1], id='header1', className="header-text"),
-											html.P(section_headers[2], id='header2', className="header-text"),
-											html.Hr(className="hr"),
-											html.P(funding_text, id='funding-text', className="page-text"),
-											# html.Label([html.P("Download the contributing", id="shorttext1"),
-											#               html.A('papers', href='https://gdr.openei.org/submissions/1473', id='hyperlink1'),
-											#               html.P("and", id="shorttext2"),
-											#               html.A('code', href='https://github.com/pnnl/GeoCLUSTER', id='hyperlink2'),
-											#               html.P(".", id="shorttext3"),
-											#               ], id='ab-note4')
-							]
-							),
+							html.Button("X", id="close-button", className="close-btn"),
+							# intro
 						]
 			)
 

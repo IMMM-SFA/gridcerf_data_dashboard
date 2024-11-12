@@ -28,6 +28,7 @@ if CONNECT_TO_LAMBDA:
 from src.reader import open_as_raster
 from src.deckgl import plot_deckgl_globe, plot_deckgl_map
 from layout import app, tech_pathways_df, src_meta, all_options
+from layout import section_headers, title_text, description_text, overview_text, overview_text2, overview_text3, author_text, funding_text
 
 # -----------------------------------------------------------------------------
 # Define dash app callbacks.
@@ -401,69 +402,69 @@ def update_output(n_clicks1, n_clicks2):
 #     'external_url': 'https://codepen.io/anon/pen/yLyzPZ.css'  # Use your own CSS file if needed
 # })
 
+# review:
 @app.callback(
-    Output("expandable-box", "style"),
-    Output("expandable-box", "children"),
-    Input("expandable-box", "n_clicks"),
-    Input("close-button", "n_clicks"),
+    [Output(component_id="expandable-box", component_property="style"),
+     Output(component_id="expandable-box", component_property="children"),
+	],
+   [Input(component_id="expandable-box", component_property="n_clicks"),
+    Input(component_id="close-button", component_property="n_clicks"),
+	]
 )
-def toggle_expand(expand_clicks, close_clicks):
-	# If the close button is clicked
-	print(expand_clicks)
-	print(close_clicks)
 
-	if close_clicks:
-		return (
-			{
+def toggle_expand(expand_clicks, close_clicks):
+
+	expanded_box_css = {"display": "block"}
+	# expanded_btn_css = {"display": "block"}
+	expanded_btn_css = [html.Button("X", id="close-button", className="close-btn", style={"display": "block" }),
+	html.Div(id='intro', 
+				children=[
+						html.P(title_text, id='title', className="title-text"),
+						html.P(description_text, id='description-text', className="page-text"), 
+						html.P(section_headers[0], id='header0', className="header-text"),
+						html.Hr(className="hr"),
+						html.P(overview_text, id='overview-text', className="page-text"),
+						html.P(overview_text2, id='overview-text2', className="page-text"),
+						html.A(overview_text3, href="https://doi.org/10.57931/2281697", target="_blank", id='overview-text3', className="page-text"),
+						html.Br(),
+						html.Br(),
+						html.P(section_headers[2], id='header2', className="header-text"),
+						html.Hr(className="hr"),
+						html.P(funding_text, id='funding-text', className="page-text"),
+		]
+		)
+	] 
+
+	closed_box_css = {
+				# "overflow-y": "hidden",
 				"width": "40px",
 				"height": "40px",
+				"border-radius": "10px",
 				"transition": "width 0.3s, height 0.3s",
-			},
-			[html.Button("X", id="close-button", style={
-				"position": "absolute",
-				"top": "5px",
-				"right": "5px",
-				"backgroundColor": "red",
-				"color": "white",
-				"border": "none",
-				"display": "none"  # Hidden when collapsed
-			})]  # Keep the button but hidden
-		)
+			}
+	# closed_btn_css ={"display": "none"}
+	closed_btn_css = [
+						html.Img(id="info-logo", className="svg", 
+		 						  	 src=app.get_asset_url("icons/nav_icons/info.svg"),
+									 style={"width": "30px", 
+									 	    "height": "30px",
+											"margin-left": "5px",
+											"margin-top": "5px"
+											}
+									 ),
+						html.Button(
+							"X", 
+							id="close-button", 
+							className="close-btn", 
+							style={"display": "none"})] 
 
-	# If the box is clicked to expand
+	if close_clicks:
+		return closed_box_css, closed_btn_css
+
 	if expand_clicks:
-		return (
-			{
-				"cursor": "pointer",
-				"transition": "width 0.3s, height 0.3s",
-				"border-radius": "25px"
-			},
-			[html.Button("X", id="close-button", 
-			style={
-				"position": "absolute",
-				"top": "5px",
-				"right": "5px",
-				"border": "none",
-				"display": "block"  # Show the close button when expanded
-			})]  # Close button in expanded state
-		)
+		return expanded_box_css, expanded_btn_css
 
-	# Keep the small size if not clicked
-	# Default state: collapsed
-	return (
-		{
-			"width": "40px",
-			"height": "40px",
-			"transition": "width 0.3s, height 0.3s",
-		},
-		[html.Button("X", id="close-button", style={
-			"position": "absolute",
-			"top": "5px",
-			"right": "5px",
-			"border": "none",
-			"display": "none"  # Hidden when collapsed
-		})]  # Keep the button but hidden
-	)
+	return expanded_box_css, expanded_btn_css # Default state: expanded
 
 # -----------------------------------------------------------------------------
 # App runs here. Define configurations, proxies, etc.

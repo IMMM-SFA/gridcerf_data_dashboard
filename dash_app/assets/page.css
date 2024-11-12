@@ -69,9 +69,19 @@ body {
     height: calc(100vh - 70px);
     margin-left: 15px;
     /* margin-bottom: 10px; */
-    border-radius: 10px;
+    border-radius: 25px;
     cursor: pointer;
     transition: width 0.3s, height 0.3s;
+}
+
+.close-btn {
+    position: absolute !important;
+    top: 5px;
+    right: 5px;
+    background-color: transparent;
+    color: black;
+    border: none;
+    cursor: pointer;
 }
 
 #intro {
@@ -82,16 +92,6 @@ body {
     display: block !important;
 }
 
-.close-button {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background-color: transparent;
-    color: black;
-    border: none;
-    cursor: pointer;
-    display: none;  /* Hidden initially */
-}
 
 
 
