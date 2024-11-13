@@ -1,14 +1,93 @@
 #layer-selector {
     z-index: 2;
-    overflow-y: scroll;
+    width: 190px; /* Set the desired width */
+    flex-direction: column;
+    border-radius: 15px;
+    padding: 10px;
+}
+
+#layer-container {
+    z-index: 2;
+    /* overflow-y: scroll; */
     background-color: var(--soft--grey);
     position: absolute; /* Positioning it relative to the parent */
     bottom: 0;
     right: 0;
-    width: 190px; /* Set the desired width */
+    width: 250px; /* Set the desired width */
     margin-bottom: 10px;
     margin-right: 270px;
     flex-direction: column;
     border-radius: 15px;
     padding: 10px;
+}
+
+#layer-funcs-container{
+    /* display: inline; */
+    width: 100%;
+    margin-left: 15px;
+    justify-content: space-between;
+    /* position: relative; */
+    display: flex;
+    padding-bottom: 5px;
+}
+
+#layer-funcs{
+    margin-right: 15px;
+}
+
+#layer-name-container{
+    margin-left: 20px;
+    display: flex;
+    align-items: center;     /* Vertically centers */
+}
+
+#hex-box {
+    background-color: #FF00FF;
+    width: 15px;
+    height: 15px;
+    float: left;
+    padding: 0;
+    margin-right: 8px;
+    border-radius: 2px;
+}
+
+#layer-name{
+    padding: 0;
+}
+
+#opacity {
+    width: 15px; 
+    height: 15px;
+    background-color: var(--soft--grey);
+}
+
+#visibility {
+    width: 25px; 
+    height: 25px;
+    background-color: var(--soft--grey);
+}
+
+
+#opacity-btn, #visibility-btn {
+    border: none;
+    background-color: var(--soft--grey);
+    /* display: inline; */
+    align-items: center; /* Center items vertically */
+    padding: 0px;
+    cursor: pointer;
+    margin: 0;
+    margin-left: 3px; 
+    margin-right: 3px; 
+
+}
+
+.layer-concept{
+    font-size: 15px;
+    /* color: #545454;  */
+    font-weight: 600;
+}
+.layer-name{
+    font-size: 13px;
+    color: #545454; 
+    font-weight: 300;
 }

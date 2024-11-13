@@ -542,17 +542,60 @@ def create_app():
 							nav(),
 							mode_switch(),
 							map_selector(),
-							dcc.Checklist(
-									id='layer-selector',
-									options=[
-										{'label': 'Basemap Ocean', 'value': 'base-map-ocean'}, # AB: need to predfine the database 
-										{'label': 'Basemap Land', 'value': 'base-map'}, 
-										{'label': 'Feasibility Layer', 'value': 'feasibility-layer'}, 
-									],
-									value=["base-map-ocean", "base-map", "feasibility-layer"],  # Default selected layers
-									inline=True,
-									# style={'display': 'none'}
-								),
+							html.Div(id="layer-container",
+									 children=[
+											html.Button("X", id="close-layer-button", className="close-btn"),
+											html.P("Layers", id='header0', className="header-text"),
+											html.Hr(className="hr2"),
+											# html.Div(id="basemap-layer",
+											# 		children=[
+											# 			html.P("Basemap"),
+											# 		]
+											# ),
+											html.Div(id="layer-funcs-container",
+													children=[
+														html.Div("Technology Layer", id="layer-concept", className="layer-concept"),
+														html.Div(id="layer-funcs", className="layer-funcs",
+																children=[
+																	html.Button(
+																		id="opacity-btn",
+																		children=[
+																			html.Img(id="opacity", src=app.get_asset_url("icons/map_icons/opacity.svg")),
+																		],
+																		# className='button-selected',  # Initially selected
+																		n_clicks=1
+																	),
+																	html.Button(
+																		id="visibility-btn",
+																		children=[
+																			html.Img(id="visibility", src=app.get_asset_url("icons/map_icons/eye-open.svg")),
+																		],
+																		# className='button-selected',  # Initially selected
+																		n_clicks=1
+																	),
+																])
+														
+													]
+											),
+											html.Div(id="layer-name-container",
+													children=[
+														html.Div(id="hex-box"),
+														html.Div("FEASIBILITY", id="layer-name", className="layer-name"),
+													]
+											),
+											html.Hr(className="hr3"),
+											dcc.Checklist(
+												id='layer-selector',
+												options=[
+													{'label': 'Basemap Ocean', 'value': 'base-map-ocean'}, # AB: need to predfine the database 
+													{'label': 'Basemap Land', 'value': 'base-map'}, 
+													{'label': 'Feasibility Layer', 'value': 'feasibility-layer'}, 
+												],
+												value=["base-map-ocean", "base-map", "feasibility-layer"],  # Default selected layers
+												inline=True,
+												# style={'display': 'none'}
+											),
+							])
 						]
 		)
 

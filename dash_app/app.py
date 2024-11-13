@@ -402,7 +402,6 @@ def update_output(n_clicks1, n_clicks2):
 #     'external_url': 'https://codepen.io/anon/pen/yLyzPZ.css'  # Use your own CSS file if needed
 # })
 
-# review:
 @app.callback(
     [Output(component_id="expandable-box", component_property="style"),
      Output(component_id="expandable-box", component_property="children"),
@@ -455,6 +454,96 @@ def toggle_expand(expand_clicks, close_clicks):
 						html.Button(
 							"X", 
 							id="close-button", 
+							className="close-btn", 
+							style={"display": "none"})] 
+
+	if close_clicks:
+		return closed_box_css, closed_btn_css
+
+	if expand_clicks:
+		return expanded_box_css, expanded_btn_css
+
+	return expanded_box_css, expanded_btn_css # Default state: expanded
+
+
+@app.callback(
+    [Output(component_id="layer-container", component_property="style"),
+     Output(component_id="layer-container", component_property="children"),
+	],
+   [Input(component_id="layer-container", component_property="n_clicks"),
+    Input(component_id="close-layer-button", component_property="n_clicks"),
+	]
+)
+
+def toggle_expand(expand_clicks, close_clicks):
+
+	expanded_box_css = {"display": "block"}
+	expanded_btn_css =[
+					html.Button("X", id="close-layer-button", className="close-btn"),
+					html.P("Layers", id='header0', className="header-text"),
+					html.Hr(className="hr2"),
+					html.Div(id="layer-funcs-container",
+							children=[
+								html.Div("Technology Layer", id="layer-concept", className="layer-concept"),
+								html.Div(id="layer-funcs", className="layer-funcs",
+										children=[
+											html.Button(
+												id="opacity-btn",
+												children=[
+													html.Img(id="opacity", src=app.get_asset_url("icons/map_icons/opacity.svg")),
+												],
+												# className='button-selected',  # Initially selected
+												n_clicks=1
+											),
+											html.Button(
+												id="visibility-btn",
+												children=[
+													html.Img(id="visibility", src=app.get_asset_url("icons/map_icons/eye-open.svg")),
+												],
+												# className='button-selected',  # Initially selected
+												n_clicks=1
+											),
+										])
+								
+							]
+					),
+					html.Div(id="layer-name-container",
+							children=[
+								html.Div(id="hex-box"),
+								html.Div("FEASIBILITY", id="layer-name", className="layer-name"),
+							]
+					),
+					html.Hr(className="hr3"),
+					dcc.Checklist(
+						id='layer-selector',
+						options=[
+							{'label': 'Basemap Ocean', 'value': 'base-map-ocean'}, # AB: need to predfine the database 
+							{'label': 'Basemap Land', 'value': 'base-map'}, 
+							{'label': 'Feasibility Layer', 'value': 'feasibility-layer'}, 
+						],
+						value=["base-map-ocean", "base-map", "feasibility-layer"],  # Default selected layers
+						inline=True,
+						# style={'display': 'none'}
+					),
+	]
+	closed_box_css = {
+				"width": "40px",
+				"height": "40px",
+				"border-radius": "10px",
+				"transition": "width 0.3s, height 0.3s",
+			}
+	closed_btn_css = [
+						html.Img(id="info-logo", className="svg", 
+		 						  	 src=app.get_asset_url("icons/funcs_icons/layers-two-final.svg"),
+									 style={"width": "30px", 
+									 	    "height": "30px",
+											"margin-left": "-5px",
+											"margin-top": "-5px"
+											}
+									 ),
+						html.Button(
+							"X", 
+							id="close-layer-button", 
 							className="close-btn", 
 							style={"display": "none"})] 
 

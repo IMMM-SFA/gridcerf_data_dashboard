@@ -155,6 +155,7 @@ def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode, is_globe):
                     pickable=True,
                     auto_highlight=True,
                     stroked=True,
+                    opacity=0.5,
                     transitions={
                             # transition with a duration of 3000ms
                             'get_position': 3000,  # Transition duration in milliseconds
