@@ -14,11 +14,15 @@
     bottom: 0;
     right: 0;
     width: 250px; /* Set the desired width */
+    height: 250px;
     margin-bottom: 10px;
     margin-right: 270px;
     flex-direction: column;
     border-radius: 15px;
     padding: 10px;
+    /* transition: width 0.3s, height 0.3s; */
+    transition: width 0.3s, height 0.3s; /* Smooth transition for width and height */
+    transform-origin: bottom right; /* Shrink from top left */
 }
 
 #layer-funcs-container{

@@ -532,6 +532,7 @@ def toggle_expand(expand_clicks, close_clicks):
 				"border-radius": "10px",
 				"transition": "width 0.3s, height 0.3s",
 			}
+	# closed_btn_css ={"display": "none"}
 	closed_btn_css = [
 						html.Img(id="info-logo", className="svg", 
 		 						  	 src=app.get_asset_url("icons/funcs_icons/layers-two-final.svg"),
