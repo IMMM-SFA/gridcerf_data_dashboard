@@ -34,10 +34,10 @@ pd.options.mode.chained_assignment = None
 # SOURCED SCRIPTS
 from src.reader import open_as_raster
 from layout import cache
-from definitions import OUTDIR, MAPBOX_TOKEN
+from definitions import OUTDIR, MAPBOX_TOKEN, DATA_DIR
 
 @cache.memoize(timeout=7200)  # Cache for 2 hours 
-def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode, is_globe):
+def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode, is_compiled, is_globe):
 
     if layer_name == "base-map-ocean":
 
@@ -95,7 +95,11 @@ def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode, is_globe):
         
         # Got it down from 20 seconds to to 5-7 seconds just by using pandas CSV file
 
-        TIFPATH = os.path.join(COMPILED_DIR, fpaths[0])
+        if is_compiled:
+            TIFPATH = os.path.join(COMPILED_DIR, fpaths[0])
+        else:
+            TIFPATH = os.path.join(DATA_DIR, fpaths[0])
+        print(TIFPATH) # ../../data/msdlive-gridcerf/gridcerf/compiled/compiled_technology_layers/ssp5/2025/biomass/gridcerf_biomass_conventional_no-ccs_dry.tif
         data_df, array, source_crs, geo_crs, df_coors_long, boundingbox, img = open_as_raster(TIFPATH=TIFPATH, is_reproject=True, is_convert_to_png=False)
         
         if adjust_mode:  # When the switch is "True"
@@ -174,7 +178,7 @@ def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode, is_globe):
                 )
 
 
-def plot_deckgl_globe(COMPILED_DIR, fpaths, selected_layers, adjust_mode):
+def plot_deckgl_globe(COMPILED_DIR, fpaths, selected_layers, adjust_mode, visibility_mode, is_compiled):
 
     view_state = pydeck.ViewState(latitude=39.8283, longitude=-98.5795, # center U.S.
                                   zoom=2,
@@ -186,7 +190,7 @@ def plot_deckgl_globe(COMPILED_DIR, fpaths, selected_layers, adjust_mode):
     deck_layers = []
 
     for layer in selected_layers:
-        layer = load_large_data(layer, COMPILED_DIR, fpaths, adjust_mode, is_globe=True)  # Load data, cached if previously loaded
+        layer = load_large_data(layer, COMPILED_DIR, fpaths, adjust_mode, is_compiled, is_globe=True)  # Load data, cached if previously loaded
         deck_layers.append(layer)
 
     r = pydeck.Deck(
@@ -251,7 +255,7 @@ def plot_deckgl_globe(COMPILED_DIR, fpaths, selected_layers, adjust_mode):
     return mapgl
 
 
-def plot_deckgl_map(COMPILED_DIR, fpaths, selected_layers, adjust_mode):
+def plot_deckgl_map(COMPILED_DIR, fpaths, selected_layers, adjust_mode, visibility_mode, is_compiled):
 
     view_state = pydeck.ViewState(latitude=39.8283, longitude=-98.5795, zoom=4)
     # view = pydeck.View(type="_GlobeView", controller=True, width="100%", height="100%") # width=1000, height=700
@@ -260,7 +264,7 @@ def plot_deckgl_map(COMPILED_DIR, fpaths, selected_layers, adjust_mode):
 
     selected_layers = ["feasibility-layer"]
     for layer in selected_layers:
-        layer = load_large_data(layer, COMPILED_DIR, fpaths, adjust_mode, is_globe=False)  # Load data, cached if previously loaded
+        layer = load_large_data(layer, COMPILED_DIR, fpaths, adjust_mode, is_compiled, is_globe=False)  # Load data, cached if previously loaded
         deck_layers.append(layer)
 
     if adjust_mode: # if true

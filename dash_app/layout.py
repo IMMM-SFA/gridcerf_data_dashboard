@@ -43,6 +43,10 @@ pathway = ["ui_tech", "ui_subtype", "ui_feature", "ui_is_ccs", "ui_cooling_type"
 tech_pathways_dict = recur_dictify(df=tech_pathways_df[pathway])
 all_options = tech_pathways_dict ## sourced
 
+layer_catalogue = pd.read_csv(os.path.join("layer_catalogue.csv"))
+layer_catalogue.rename(columns={'filename': 'label', 'filepath': 'value'}, inplace=True)
+list_of_dicts = layer_catalogue[['label', 'value']].to_dict(orient='records')
+
 # -----------------------------------------------------------------------------
 # Dash app layout begins here.
 # -----------------------------------------------------------------------------
@@ -362,17 +366,17 @@ def create_app():
 							   		html.Br(),
 									html.P("Explore individual layers in the database", className="guidance-text"), 
 									html.Br(),
-									dcc.Dropdown(
-											id='multi-layer-dropdown',
-											className="dropdown-select",
-											options=[
-												{'label': 'Option 1', 'value': 'option1'},
-												{'label': 'Option 2', 'value': 'option2'},
-												{'label': 'Option 3', 'value': 'option3'}
-											],
-											value=['option1'],  # Initial selected values
-											multi=True
-										),
+									html.Div(id="dropdown-container",
+											 children=[
+												dcc.Dropdown(
+														id='multi-layer-dropdown',
+														className="dropdown-select",
+														options=list_of_dicts,
+														value=[], 
+														multi=True,
+														searchable=True
+													)]
+											)
 								    # table_card(),
 								    # layer_metadata_card()
 							   ]
@@ -544,7 +548,7 @@ def create_app():
 							map_selector(),
 							html.Div(id="layer-container",
 									 children=[
-											html.Button("X", id="close-layer-button", className="close-btn"),
+											# html.Button("X", id="close-layer-button", className="close-btn"),
 											html.P("Layers", id='header0', className="header-text"),
 											html.Hr(className="hr2"),
 											# html.Div(id="basemap-layer",
@@ -557,21 +561,21 @@ def create_app():
 														html.Div("Technology Layer", id="layer-concept", className="layer-concept"),
 														html.Div(id="layer-funcs", className="layer-funcs",
 																children=[
-																	html.Button(
-																		id="opacity-btn",
-																		children=[
-																			html.Img(id="opacity", src=app.get_asset_url("icons/map_icons/opacity.svg")),
-																		],
-																		# className='button-selected',  # Initially selected
-																		n_clicks=1
-																	),
+																	# html.Button(
+																	# 	id="opacity-btn",
+																	# 	children=[
+																	# 		html.Img(id="opacity", src=app.get_asset_url("icons/map_icons/opacity.svg")),
+																	# 	],
+																	# 	# className='button-selected',  # Initially selected
+																	# 	n_clicks=1
+																	# ),
 																	html.Button(
 																		id="visibility-btn",
 																		children=[
 																			html.Img(id="visibility", src=app.get_asset_url("icons/map_icons/eye-open.svg")),
 																		],
 																		# className='button-selected',  # Initially selected
-																		n_clicks=1
+																		n_clicks=2
 																	),
 																])
 														
@@ -584,17 +588,17 @@ def create_app():
 													]
 											),
 											html.Hr(className="hr3"),
-											dcc.Checklist(
-												id='layer-selector',
-												options=[
-													{'label': 'Basemap Ocean', 'value': 'base-map-ocean'}, # AB: need to predfine the database 
-													{'label': 'Basemap Land', 'value': 'base-map'}, 
-													{'label': 'Feasibility Layer', 'value': 'feasibility-layer'}, 
-												],
-												value=["base-map-ocean", "base-map", "feasibility-layer"],  # Default selected layers
-												inline=True,
-												# style={'display': 'none'}
-											),
+											# dcc.Checklist(
+											# 	id='layer-selector',
+											# 	options=[
+											# 		{'label': 'Basemap Ocean', 'value': 'base-map-ocean'}, # AB: need to predfine the database 
+											# 		{'label': 'Basemap Land', 'value': 'base-map'}, 
+											# 		{'label': 'Feasibility Layer', 'value': 'feasibility-layer'}, 
+											# 	],
+											# 	value=["base-map-ocean", "base-map", "feasibility-layer"],  # Default selected layers
+											# 	inline=True,
+											# 	# style={'display': 'none'}
+											# ),
 							])
 						]
 		)
@@ -668,6 +672,7 @@ def create_app():
 									header_card(),
 									page_card(),
 									# footer_card(),
+									dcc.Store(id="visibility-click-store", data=0), 
 							],
 						)
 

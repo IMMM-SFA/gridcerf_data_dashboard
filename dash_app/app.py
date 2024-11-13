@@ -164,24 +164,35 @@ def show_hide_element(feature, is_ccs, cooling, capacity_factor):
 	Input(component_id="carbon-capture-select", component_property="value"),
 	Input(component_id="cooling-type-select", component_property="value"), 
 	Input(component_id="capacity-factor-select", component_property="value"),
-	Input(component_id="layer-selector", component_property="value"),
+	# Input(component_id="layer-selector", component_property="value"),
 	Input('adjust-mode', 'value'),
 	Input('button1', 'n_clicks'),
 	Input('button2', 'n_clicks'),
-	Input('last-btn-pressed', 'children')
+	Input('last-btn-pressed', 'children'),
+	# Input(component_id="opacity-btn", component_property="n_clicks"),
+	Input(component_id="visibility-btn", component_property="n_clicks"),
+	Input(component_id="tabnav", component_property="value"),
+	Input('multi-layer-dropdown', 'value')
     ],
 )
 
 def map(year, ssp,
 		tech, subtech, feature,
-		is_ccs, coolingtype, capacity_factor, selected_layers, 
-		adjust_mode, btn1, btn2, last_pressed):
+		is_ccs, coolingtype, capacity_factor, 
+		# selected_layers, 
+		adjust_mode, btn1, btn2, last_pressed,
+		# opacity_clicks, 
+		visible_clicks,
+		tab_id,
+		layer_catalogue
+		):
 
     # -----------------------------------------------------------------------------
     # Creates and displays map by querying a "database" table of all pathways
     # to their filenames.
     # -----------------------------------------------------------------------------
 
+	
 	# print(" --------------------------------------------------------------- ")
 	year = str(year)
 	# print([ssp, year, tech, subtech, feature, is_ccs, coolingtype, capacity_factor])
@@ -195,20 +206,36 @@ def map(year, ssp,
 									   ui_capacity_factor in @capacity_factor")
 
 	fpaths = query_df["fpath"].values
-
+	# print(fpaths) # ['ssp5/2025/biomass/gridcerf_biomass_conventional_no-ccs_dry.tif']
 	# i = 0
 	# for fpath in fpaths:
 	# 	TIFPATH = os.path.join(COMPILED_DIR, fpath)
 	# 	data_array, array, source_crs, df_coors_long, boundingbox, img = open_as_raster(TIFPATH=TIFPATH, is_reproject=False, is_convert_to_png=False)
 	# 	i += 1
 
+	basemap_layers = ["base-map-ocean", "base-map"]
+
+	if visible_clicks % 2 == 0:
+		visibility_mode = True
+		selected_layers = ["base-map-ocean", "base-map", "feasibility-layer"]
+	else: 
+		visibility_mode = False
+		selected_layers = basemap_layers
+
+	if tab_id == "insights-tab":
+		is_compiled = True
+	if tab_id == "layers-tab": 
+		is_compiled = False
+		selected_layers = basemap_layers + layer_catalogue
+	
+	
+	print(selected_layers)
 	# DeckGL
 	ctx = callback_context # there are multiple callback contextes in this  
 
 	if ctx.triggered:
 		
 		clicked_id = ctx.triggered[0]['prop_id'].split('.')[0]
-		# print(ctx.triggered)
 
 		# if adjust_mode:
 		clicked_id_ = clicked_id + "-" + last_pressed
@@ -217,26 +244,30 @@ def map(year, ssp,
 		# "adjust-mode-True"
 		# "adjust-mode-False"
 
-
 		# clicked_id == adjust-mode from light to dark then need go into button2
 		if clicked_id == 'button1':
-			fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, adjust_mode=adjust_mode)
+			fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
+										adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
 			last_pressed = "button1"
 		# elif clicked_id_ == 'adjust-mode-button1':
 		# 	fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, adjust_mode=adjust_mode)
 		# 	last_pressed = "button1"
 		elif clicked_id == 'button2':
-			fig_div = plot_deckgl_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, adjust_mode=adjust_mode)
+			fig_div = plot_deckgl_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
+										adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
 			last_pressed = "button2"
 		elif clicked_id_ == "adjust-mode-button2":
-			fig_div = plot_deckgl_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, adjust_mode=adjust_mode)
+			fig_div = plot_deckgl_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
+									adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
 			last_pressed = "button2"
 		else:
 			# default (or if fails all other options it will become a globe) 
-			fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, adjust_mode=adjust_mode)
+			fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
+									adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
 			last_pressed = "button1"
 	else:
-		fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, adjust_mode=adjust_mode)
+		fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
+								adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
 		last_pressed = "button1"
 
 	return fig_div, last_pressed
@@ -466,95 +497,139 @@ def toggle_expand(expand_clicks, close_clicks):
 	return expanded_box_css, expanded_btn_css # Default state: expanded
 
 
+# @app.callback(
+#     [Output(component_id="layer-container", component_property="style"),
+#      Output(component_id="layer-container", component_property="children"),
+# 	],
+#    [Input(component_id="layer-container", component_property="n_clicks"),
+#     Input(component_id="close-layer-button", component_property="n_clicks"),
+# 	]
+# )
+
+# def toggle_expand(expand_clicks, close_clicks):
+
+# 	expanded_box_css = {"display": "block"}
+# 	expanded_btn_css =[
+# 					html.Button("X", id="close-layer-button", className="close-btn"),
+# 					html.P("Layers", id='header0', className="header-text"),
+# 					html.Hr(className="hr2"),
+# 					html.Div(id="layer-funcs-container",
+# 							children=[
+# 								html.Div("Technology Layer", id="layer-concept", className="layer-concept"),
+# 								html.Div(id="layer-funcs", className="layer-funcs",
+# 										children=[
+# 											# html.Button(
+# 											# 	id="opacity-btn",
+# 											# 	children=[
+# 											# 		html.Img(id="opacity", src=app.get_asset_url("icons/map_icons/opacity.svg")),
+# 											# 	],
+# 											# 	# className='button-selected',  # Initially selected
+# 											# 	n_clicks=1
+# 											# ),
+# 											html.Button(
+# 												id="visibility-btn",
+# 												children=[
+# 													html.Img(id="visibility", src=app.get_asset_url("icons/map_icons/eye-open.svg")),
+# 												],
+# 												# className='button-selected',  # Initially selected
+# 												n_clicks=0
+# 											),
+# 										])
+# 							]
+# 					),
+# 					html.Div(id="layer-name-container",
+# 							children=[
+# 								html.Div(id="hex-box"),
+# 								html.Div("FEASIBILITY", id="layer-name", className="layer-name"),
+# 							]
+# 					),
+# 					html.Hr(className="hr3"),
+# 					dcc.Checklist(
+# 						id='layer-selector',
+# 						options=[
+# 							{'label': 'Basemap Ocean', 'value': 'base-map-ocean'}, # AB: need to predfine the database 
+# 							{'label': 'Basemap Land', 'value': 'base-map'}, 
+# 							{'label': 'Feasibility Layer', 'value': 'feasibility-layer'}, 
+# 						],
+# 						value=["base-map-ocean", "base-map", "feasibility-layer"],  # Default selected layers
+# 						inline=True,
+# 						# style={'display': 'none'}
+# 					),
+# 	]
+# 	closed_box_css = {
+# 				"width": "40px",
+# 				"height": "40px",
+# 				"border-radius": "10px",
+# 				"transition": "width 0.3s, height 0.3s",
+# 			}
+# 	# closed_btn_css ={"display": "none"}
+# 	closed_btn_css = [
+# 						html.Img(id="info-logo", className="svg", 
+# 		 						  	 src=app.get_asset_url("icons/funcs_icons/layers-two-final.svg"),
+# 									 style={"width": "30px", 
+# 									 	    "height": "30px",
+# 											"margin-left": "-5px",
+# 											"margin-top": "-5px"
+# 											}
+# 									 ),
+# 						html.Button(
+# 							"X", 
+# 							id="close-layer-button", 
+# 							className="close-btn", 
+# 							style={"display": "none"})] 
+
+# 	if close_clicks:
+# 		return closed_box_css, closed_btn_css
+
+# 	if expand_clicks:
+# 		return expanded_box_css, expanded_btn_css
+
+	
+# 	return expanded_box_css, expanded_btn_css # Default state: expanded
+
+
+
+
+
 @app.callback(
-    [Output(component_id="layer-container", component_property="style"),
-     Output(component_id="layer-container", component_property="children"),
-	],
-   [Input(component_id="layer-container", component_property="n_clicks"),
-    Input(component_id="close-layer-button", component_property="n_clicks"),
-	]
+    Output("visibility", "src"),
+    Input("visibility-btn", "n_clicks"),
 )
+def toggle_eye_icon(n_clicks):
 
-def toggle_expand(expand_clicks, close_clicks):
+	if n_clicks % 2 == 0:
+		# Even click count, show "eye-open"
+		return app.get_asset_url("icons/map_icons/eye-open.svg")
+	else:
+		# Odd click count, show "eye-closed"
+		return app.get_asset_url("icons/map_icons/eye-slashed.svg")
 
-	expanded_box_css = {"display": "block"}
-	expanded_btn_css =[
-					html.Button("X", id="close-layer-button", className="close-btn"),
-					html.P("Layers", id='header0', className="header-text"),
-					html.Hr(className="hr2"),
-					html.Div(id="layer-funcs-container",
-							children=[
-								html.Div("Technology Layer", id="layer-concept", className="layer-concept"),
-								html.Div(id="layer-funcs", className="layer-funcs",
-										children=[
-											html.Button(
-												id="opacity-btn",
-												children=[
-													html.Img(id="opacity", src=app.get_asset_url("icons/map_icons/opacity.svg")),
-												],
-												# className='button-selected',  # Initially selected
-												n_clicks=1
-											),
-											html.Button(
-												id="visibility-btn",
-												children=[
-													html.Img(id="visibility", src=app.get_asset_url("icons/map_icons/eye-open.svg")),
-												],
-												# className='button-selected',  # Initially selected
-												n_clicks=1
-											),
-										])
-								
-							]
-					),
-					html.Div(id="layer-name-container",
-							children=[
-								html.Div(id="hex-box"),
-								html.Div("FEASIBILITY", id="layer-name", className="layer-name"),
-							]
-					),
-					html.Hr(className="hr3"),
-					dcc.Checklist(
-						id='layer-selector',
-						options=[
-							{'label': 'Basemap Ocean', 'value': 'base-map-ocean'}, # AB: need to predfine the database 
-							{'label': 'Basemap Land', 'value': 'base-map'}, 
-							{'label': 'Feasibility Layer', 'value': 'feasibility-layer'}, 
-						],
-						value=["base-map-ocean", "base-map", "feasibility-layer"],  # Default selected layers
-						inline=True,
-						# style={'display': 'none'}
-					),
-	]
-	closed_box_css = {
-				"width": "40px",
-				"height": "40px",
-				"border-radius": "10px",
-				"transition": "width 0.3s, height 0.3s",
-			}
-	# closed_btn_css ={"display": "none"}
-	closed_btn_css = [
-						html.Img(id="info-logo", className="svg", 
-		 						  	 src=app.get_asset_url("icons/funcs_icons/layers-two-final.svg"),
-									 style={"width": "30px", 
-									 	    "height": "30px",
-											"margin-left": "-5px",
-											"margin-top": "-5px"
-											}
-									 ),
-						html.Button(
-							"X", 
-							id="close-layer-button", 
-							className="close-btn", 
-							style={"display": "none"})] 
 
-	if close_clicks:
-		return closed_box_css, closed_btn_css
+# @app.callback(
+#     [Output("visibility", "src"),  # Update the image source
+#      Output("visibility-click-store", "data")],  # Update the click count in the store
+#     Input("visibility-btn", "n_clicks"),  # Trigger on button click
+#     State("visibility-click-store", "data")  # Get the current stored click count
+# )
+# def toggle_eye_icon(n_clicks, stored_clicks):
 
-	if expand_clicks:
-		return expanded_box_css, expanded_btn_css
+# 	print("click ", n_clicks, stored_clicks)
 
-	return expanded_box_css, expanded_btn_css # Default state: expanded
+# 	if n_clicks is None:
+# 		n_clicks = stored_clicks  # If no clicks, retain the previous value
+
+# 	# Increment the stored click count by 1
+# 	# if n_clicks >= stored_clicks:
+# 	# 	print("*****")
+	
+# 	stored_clicks += 1
+
+# 	# Toggle the icon based on whether the click count is odd or even
+# 	if stored_clicks % 2 == 0:
+# 		return app.get_asset_url("icons/map_icons/eye-open.svg"), stored_clicks
+# 	else:
+# 		return app.get_asset_url("icons/map_icons/eye-slashed.svg"), stored_clicks
+
 
 # -----------------------------------------------------------------------------
 # App runs here. Define configurations, proxies, etc.

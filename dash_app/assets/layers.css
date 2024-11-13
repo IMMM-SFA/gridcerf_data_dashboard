@@ -14,7 +14,7 @@
     bottom: 0;
     right: 0;
     width: 250px; /* Set the desired width */
-    height: 250px;
+    height: 150px;
     margin-bottom: 10px;
     margin-right: 270px;
     flex-direction: column;
@@ -94,4 +94,29 @@
     font-size: 13px;
     color: #545454; 
     font-weight: 300;
+}
+
+
+#multi-layer-dropdown{
+    max-width: 300px;
+    /* word-wrap: break-word !important;  */
+    /* white-space: normal !important;   */
+}
+#dropdown-container { 
+    max-width: 300px;
+    /* word-wrap: break-word !important; 
+    white-space: normal !important;   */
+}
+
+/* Wrap long text inside dropdown options */
+/* .Select-control .Select-menu-outer .Select-option {
+    word-wrap: break-word !important; 
+    white-space: normal !important; 
+} */
+
+.Select-value-label, .Select-multi-value-wrapper, .Select-menu-outer {
+    word-wrap: break-word;
+    white-space: normal;
+    line-height: 1.2;
+    font-size: 13px;
 }
