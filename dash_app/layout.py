@@ -51,53 +51,53 @@ list_of_dicts = layer_catalogue[['label', 'value']].to_dict(orient='records')
 # Dash app layout begins here.
 # -----------------------------------------------------------------------------
 
-section_headers = ["Overview", "Authors", "Funding"]
+section_headers = ["Overview", "Download Data",  "Funding"]
 
-title_text = """Geospatial Raster Input Data for Capacity Expansion Regional Feasibility (GRIDCERF) Version 2.0"""
+title_text = """Geospatial Raster Input Data for Capacity Expansion Regional Feasibility (GRIDCERF), Version 2.0"""
 
-description_text = """A high-resolution energy mapper for exploring the siting suitability of renewable 
-						and non-renewable power plants in the contiguous United States."""
+description_text = """This dashboard presents a high-resolution interface for exploring geospatial power plant siting
+					 suitability of renewable and non-renewable power plants in the contiguous United States."""
 
-overview_text = """The GRIDCERF database is a high-resolution product to evaluate siting suitability for renewable 
-					and non-renewable power plants in the conterminous United States. GRIDCERF offers hundreds of 
-					individual suitability layers for use with both renewable and non-renewable power plant 
-					technology configurations in a harmonized format that can be easily ingested by 
-					geospatially-enabled modeling software. 
-					"""
+intro_text = dcc.Markdown('''
 
-overview_text2 = """ GRIDCERF data can be directly used with the power plant siting model CERF 
-					(Capacity Expansion Regional Feasibility) to site power plants at a 1km2 resolution."""
+		This dashboard presents a high-resolution interface for exploring geospatial power plant
+		siting suitability of renewable and non-renewable power plants in the contiguous United States.
 
-overview_text3 = """Download the data."""
+		The GRIDCERF database offers hundreds of individual technological, socioeconomic, and natural 
+		resource constraints as well as dozens of pre-compiled energy generation specific composite 
+		suitability layers. Data is provided in a harmonized data format that can be easily ingested 
+		by geospatially-enabled modeling software.
 
-author_text = """GRIDCERF represents the extensive collection of data formatting, processing, and visualization 
-					created by the IM3 Group."""
+		GRIDCERF data can be directly used with the open-source power plant siting model [CERF](https://github.com/IMMM-SFA/cerf) 
+		(Capacity Expansion Regional Feasibility) to site renewable and non-renewable power 
+		plants at a 1 $\\text{km}^2$ resolution.
+
+		''', 
+		className="page-text",
+		link_target="_blank",
+		mathjax=True
+)
+
+data_text = dcc.Markdown(
+	'''
+	GRIDCERF data is available for download [here](https://doi.org/10.57931/2281697).
+	''',
+	className="page-text",
+	link_target="_blank",
+)
 
 funding_text = """This research was funded by the U.S. Department of Energy, Office of Science, as part of 
 					research in MultiSector Dynamics, Earth and Environmental Systems Modeling Program."""
-
-
-
-# no Alaska, Hawaii
-state_names = ["Alabama", "Arkansas", "American Samoa", "Arizona", "California", 
-				"Colorado", "Connecticut", "District ", "of Columbia", "Delaware", "Florida", 
-				"Georgia", "Guam", "Iowa", "Idaho", "Illinois", "Indiana", "Kansas", 
-				"Kentucky", "Louisiana", "Massachusetts", "Maryland", "Maine", "Michigan", 
-				"Minnesota", "Missouri", "Mississippi", "Montana", "North Carolina", 
-				"North Dakota", "Nebraska", "New Hampshire", "New Jersey", "New Mexico", "Nevada", 
-				"New York", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico", "Rhode Island", 
-				"South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Virginia", 
-				"Virgin Islands", "Vermont", "Washington", "Wisconsin", "West Virginia", "Wyoming"]
 
 tabs = ["", "insights-tab", "layers-tab"]
 
 select_headers = ["Select a visualization tool", 
 					"Select a state", 
 					"Select a year", 
-					"Select a technology",
-					"Select a technology sub-type",
+					"Select a generation type",
+					"Select a generation sub-type",
 					"Carbon Capture Sequestration (CCS)",
-					"Select a Cooling Type", 
+					"Select a thermoelectric cooling type", 
 					"Select a Shared Socioeconomic Pathway (SSP)", #  Select a socioeconomic scenario
 					"Select a feature",
 					"Select a Class" # Capacity Factor (CF)
@@ -130,7 +130,7 @@ def create_app():
 		                           {"name": "description", "content": "Geospatial Raster Input Data for Capacity Expansion Regional Feasibility (GRIDCERF). A high-resolution energy mapper."}
 		                        ],
 						serve_locally = False if LAMBDA_TASK_ROOT is not None else True, # must be False for app deployment on AWS lambda
-						server=server
+						server=server,
 						)
 
 	else:
@@ -179,7 +179,6 @@ def create_app():
 						]
 					)
 
-
 	def metadata_text_value(group_id, text_id, value_id, text):
 
 		return html.Div(
@@ -203,18 +202,9 @@ def create_app():
 							metadata_text_value(group_id="meta-desc-text", text_id="desc_text", value_id="description", text="DESCRIPTION"),
 							metadata_text_value(group_id="meta-date-updated-text", text_id="updated_text", value_id="date_updated", text="DATE UPDATED"),
 							metadata_text_value(group_id="meta-date-accessed-text", text_id="accessed_text", value_id="date_accessed", text="DATE ACCESSED"),
-
 							metadata_text_value(group_id="meta-methods-text", text_id="methods_text", value_id="methodlogy", text="METHDOLOGY"),
 							metadata_text_value(group_id="meta_citation-text", text_id="citation_text", value_id="citation", text="CITATION"),
 							metadata_text_value(group_id="meta-link-text", text_id="data_link_text", value_id="data_link", text="DATA LINK"),
-							# html.Div(id="tag_id", className="metatext"),
-							# html.Div(id="source_type", className="metatext"),
-							# html.Div(id="description", className="metatext"),
-							# html.Div(id="date_updated", className="metatext"),
-							# html.Div(id="date_accessed", className="metatext"),
-							# html.Div(id="methodlogy", className="metatext"),
-							# html.Div(id="citation", className="metatext"), # button
-							# html.Div(id="data_link", className="metatext"), # button
 						]
 			)
 
@@ -228,7 +218,8 @@ def create_app():
 	                         selected_className="active-tab",
 	                         children=[
 	                         			html.Br(),
-										html.P("Explore pre-compiled technology-specific siting suitability layers", className="guidance-text"), 
+										html.P("Explore siting suitability layers for different generation types:",
+												className="guidance-text"), 
 										html.Div(id="tech-select-container",
 	                         					 className="select-container",
 	                         					 children=[
@@ -252,9 +243,6 @@ def create_app():
 				                                    dcc.Dropdown(
 				                                        id="subtech-select",
 				                                        className="dropdown-select",
-				                                        # options=tech_pathways_df["subtype"].dropna().unique(), # NOT THE SAME 
-				                                        # options=["Conventional", "Integrated Gasification Combined Cycle (IGCC)", "CC", "Gen3", "CT", "CSP", "PV", "Onshore"],
-				                                        # value="Conventional",
 				                                        clearable=False,
 				                                        searchable=False,
 				                                        multi=False
@@ -283,8 +271,6 @@ def create_app():
 					                                dcc.Dropdown(
 					                                    id="carbon-capture-select",
 					                                    className="dropdown-select",
-					                                    # options=["CCS", "No-CCS"],
-					                                    # value="CCS",
 					                                    clearable=False,
 					                                    searchable=False,
 					                                    multi=False
@@ -299,9 +285,6 @@ def create_app():
 				                                    dcc.Dropdown(
 				                                        id="cooling-type-select",
 				                                        className="dropdown-select",
-				                                        # options=['Dry', 'Once-through', 'Recirculating','Recirculating-Seawater',
-				                                        # 		 'Pond', 'Centralized Enhanced Dry-Hybrid', 'Centralized Enhanced Recirculating'],
-				                                        # value="Dry",
 				                                        clearable=False,
 				                                        searchable=False,
 				                                        multi=False
@@ -322,7 +305,7 @@ def create_app():
 				                                    ),
 	                         					 ]
 	                         					 ),
-																				html.Div(id="year-select-container",
+										html.Div(id="year-select-container",
 	                         					 className="select-container",
 	                         					 children=[
 		                         					html.P(select_headers[2], id='select-header2', className="dropdown-header-text"),
@@ -384,8 +367,7 @@ def create_app():
 
 	    tabnav = dcc.Tabs(id="tabnav", 
 	                    value=tabs[1], 
-	                    children=[#information_tab,
-	                              insights_tab,
+	                    children=[insights_tab,
 	                              layers_tab
 	                              ])
 
@@ -408,8 +390,9 @@ def create_app():
 		 						  html.Div(id="name-logo-container",
 		 						  		children=[
 		 						  				  html.H1("GRIDCERF", id="app-name"),
-		 						  				  html.Img(id="app-logo", className="svg", 
-		 						  				  		   src=app.get_asset_url("icons/logos_icons/model_kaleidoscope_world.svg")),
+												  # KEEP
+		 						  				  # html.Img(id="app-logo", className="svg", 
+		 						  				  #		   src=app.get_asset_url("icons/logos_icons/model_kaleidoscope_world.svg")),
 		 						  				  ]
 		 						  			),
 		 						  ]
@@ -584,7 +567,9 @@ def create_app():
 											html.Div(id="layer-name-container",
 													children=[
 														html.Div(id="hex-box"),
-														html.Div("FEASIBILITY", id="layer-name", className="layer-name"),
+														html.Div("SUITABLE SITING AREA", id="layer-name", className="layer-name"),
+														# html.Div("FEASIBILITY", id="layer-name", className="layer-name"),
+														# Suitable Siting Area
 													]
 											),
 											html.Hr(className="hr3"),
@@ -602,32 +587,6 @@ def create_app():
 							])
 						]
 		)
-
-	# intro = html.Div(id='intro', 
-	# 			children=[
-	# 					html.P(title_text, id='title', className="title-text"),
-	# 					html.P(description_text, id='description-text', className="page-text"), 
-	# 					html.P(section_headers[0], id='header0', className="header-text"),
-	# 					html.Hr(className="hr"),
-	# 					html.P(overview_text, id='overview-text', className="page-text"),
-	# 					html.P(overview_text2, id='overview-text2', className="page-text"),
-	# 					html.A(overview_text3, href="https://doi.org/10.57931/2281697", target="_blank", id='overview-text3', className="page-text"),
-	# 					html.Br(),
-	# 					html.Br(),
-
-	# 					# html.P(overview_text_cont, id='overview-text-cont', className="page-text"),
-	# 					#   html.P(section_headers[1], id='header1', className="header-text"),
-	# 					html.P(section_headers[2], id='header2', className="header-text"),
-	# 					html.Hr(className="hr"),
-	# 					html.P(funding_text, id='funding-text', className="page-text"),
-	# 					# html.Label([html.P("Download the contributing", id="shorttext1"),
-	# 					#               html.A('papers', href='https://gdr.openei.org/submissions/1473', id='hyperlink1'),
-	# 					#               html.P("and", id="shorttext2"),
-	# 					#               html.A('code', href='https://github.com/pnnl/GeoCLUSTER', id='hyperlink2'),
-	# 					#               html.P(".", id="shorttext3"),
-	# 					#               ], id='ab-note4')
-	# 	]
-	# 	)
 
 	def about():
 
@@ -668,7 +627,6 @@ def create_app():
 	app.layout = html.Div(
 					      id="app-container",
 					      children=[
-									# dcc.Store(id='results'),
 									header_card(),
 									page_card(),
 									# footer_card(),

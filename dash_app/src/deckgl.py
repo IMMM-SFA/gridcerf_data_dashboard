@@ -30,13 +30,83 @@ import numpy as np
 # import geopandas as gpd
 import pandas as pd
 pd.options.mode.chained_assignment = None
+import xyzservices.providers as xyz
 
 # SOURCED SCRIPTS
 from src.reader import open_as_raster
-from layout import cache
-from definitions import OUTDIR, MAPBOX_TOKEN, DATA_DIR
+from layout import cache, list_of_dicts
+from definitions import OUTDIR, DATA_DIR #, MAPBOX_TOKEN
 
-@cache.memoize(timeout=7200)  # Cache for 2 hours 
+STATES = "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/refs/heads/master/data/geojson/us-states.json"
+
+def read_layer(is_compiled, COMPILED_DIR, fpaths):
+
+    # Got it down from 20 seconds to to 5-7 seconds just by using pandas CSV file
+
+    # print(fpaths) # something compiled is being fit in here, why?
+    # ['base-map-ocean', 'base-map', 
+    # 'gridcerf/common/gridcerf_dod_military_installations_conus.tif', 
+    # 'gridcerf/common/gridcerf_usfs_national_wild_scenic_river_system_conus.tif']
+
+    if is_compiled:
+        TIFPATH = os.path.join(COMPILED_DIR, fpaths[0])
+    else:
+        TIFPATH = os.path.join(DATA_DIR, fpaths[0])
+    # print(TIFPATH) # ../../data/msdlive-gridcerf/gridcerf/compiled/compiled_technology_layers/ssp5/2025/biomass/gridcerf_biomass_conventional_no-ccs_dry.tif
+    data_df, array, source_crs, geo_crs, df_coors_long, boundingbox, img = open_as_raster(TIFPATH=TIFPATH, is_reproject=True, is_convert_to_png=False)
+    
+    print(df_coors_long.shape)
+    print("DONE Processing")
+    print("now render...")
+    print("\n")
+
+    return df_coors_long
+
+def style_map_icons(adjust_mode, df_coors_long, is_globe):
+
+    if adjust_mode:  # When the switch is "True"
+        url_path = "/assets/icons/map_icons/im3_blue_square.svg"
+    else:
+        url_path = "/assets/icons/map_icons/fuchsia_square.svg"
+
+    icon_data = {
+        # "url": "/assets/icons/map_icons/fuchsia_square.svg", # svg repo
+        "url": "/assets/icons/map_icons/black_square.svg",
+        # "url": "/assets/icons/map_icons/white_square.svg",
+        "width": 242,
+        "height": 242,
+        "anchorY": 121, # set to 0 if want to position it at the bottom center of the icon
+        "anchorX": 121, # center of X
+        # 'color': [255, 0, 255],  # Bright fuchsia -- doesn't work
+    }
+
+    df_coors_long["icon_data"] = np.where(df_coors_long.index >= 0, icon_data, None)
+        
+    df_coors_long["icon_data"] = np.where(df_coors_long.index >= 0, icon_data, None)
+    df_coors_long["Angle"] = np.where(df_coors_long["LongitudeProj"] <= -121, 15,
+                    np.where(df_coors_long["LongitudeProj"].between(-121, -118), 13,
+                    np.where(df_coors_long["LongitudeProj"].between(-118, -112), 10,
+                    np.where(df_coors_long["LongitudeProj"].between(-112, -107), 8,
+                    np.where(df_coors_long["LongitudeProj"].between(-107, -103), 5,
+                    np.where(df_coors_long["LongitudeProj"].between(-103, -100), 2,
+                    np.where(df_coors_long["LongitudeProj"].between(-93, -91), -2,
+                    np.where(df_coors_long["LongitudeProj"].between(-91, -82), -5,
+                    np.where(df_coors_long["LongitudeProj"].between(-82, -76), -10,
+                    np.where(df_coors_long["LongitudeProj"] > -76, -15, 0))))))))))
+
+    # df_save = df_coors_long[["IsFeasible", "LongitudeProj", "LatitudeProj", "icon_data","Angle"]]
+    # df_save.to_csv("/Users/bern700/git_repositories/IMMM-SFA/gridcerf_data_dashboard/dash_app/my_geodata.csv", index=False)
+    # df_coors_long = pd.read_csv('/Users/bern700/git_repositories/IMMM-SFA/gridcerf_data_dashboard/dash_app/my_geodata.csv')
+
+    if is_globe:
+        get_size = 1150
+    else:
+        get_size = 1750
+
+    return df_coors_long, get_size 
+    
+
+# @cache.memoize(timeout=7200)  # Cache for 2 hours 
 def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode, is_compiled, is_globe):
 
     if layer_name == "base-map-ocean":
@@ -92,53 +162,13 @@ def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode, is_compiled, 
                     )
     
     if layer_name == "feasibility-layer":
+
+        print("FEASIBILITY LAYER")
+        df_coors_long = read_layer(is_compiled=is_compiled, COMPILED_DIR=COMPILED_DIR, fpaths=fpaths)
+        df_coors_long, get_size  = style_map_icons(adjust_mode=adjust_mode, df_coors_long=df_coors_long, is_globe=is_globe)
         
-        # Got it down from 20 seconds to to 5-7 seconds just by using pandas CSV file
-
-        if is_compiled:
-            TIFPATH = os.path.join(COMPILED_DIR, fpaths[0])
-        else:
-            TIFPATH = os.path.join(DATA_DIR, fpaths[0])
-        print(TIFPATH) # ../../data/msdlive-gridcerf/gridcerf/compiled/compiled_technology_layers/ssp5/2025/biomass/gridcerf_biomass_conventional_no-ccs_dry.tif
-        data_df, array, source_crs, geo_crs, df_coors_long, boundingbox, img = open_as_raster(TIFPATH=TIFPATH, is_reproject=True, is_convert_to_png=False)
-        
-        if adjust_mode:  # When the switch is "True"
-            url_path = "/assets/icons/map_icons/im3_blue_square.svg"
-        else:
-            url_path = "/assets/icons/map_icons/fuchsia_square.svg"
-
-        icon_data = {
-            "url": "/assets/icons/map_icons/fuchsia_square.svg", # svg repo
-            "width": 242,
-            "height": 242,
-            "anchorY": 121, # set to 0 if want to position it at the bottom center of the icon
-            "anchorX": 121, # center of X
-            # 'color': [255, 0, 255],  # Bright fuchsia -- doesn't work
-        }
-
-        df_coors_long["icon_data"] = np.where(df_coors_long.index >= 0, icon_data, None)
-         
-        df_coors_long["icon_data"] = np.where(df_coors_long.index >= 0, icon_data, None)
-        df_coors_long["Angle"] = np.where(df_coors_long["LongitudeProj"] <= -121, 15,
-                     np.where(df_coors_long["LongitudeProj"].between(-121, -118), 13,
-                     np.where(df_coors_long["LongitudeProj"].between(-118, -112), 10,
-                     np.where(df_coors_long["LongitudeProj"].between(-112, -107), 8,
-                     np.where(df_coors_long["LongitudeProj"].between(-107, -103), 5,
-                     np.where(df_coors_long["LongitudeProj"].between(-103, -100), 2,
-                     np.where(df_coors_long["LongitudeProj"].between(-93, -91), -2,
-                     np.where(df_coors_long["LongitudeProj"].between(-91, -82), -5,
-                     np.where(df_coors_long["LongitudeProj"].between(-82, -76), -10,
-                     np.where(df_coors_long["LongitudeProj"] > -76, -15, 0))))))))))
-
-        # df_save = df_coors_long[["IsFeasible", "LongitudeProj", "LatitudeProj", "icon_data","Angle"]]
-        # df_save.to_csv("/Users/bern700/git_repositories/IMMM-SFA/gridcerf_data_dashboard/dash_app/my_geodata.csv", index=False)
-        # df_coors_long = pd.read_csv('/Users/bern700/git_repositories/IMMM-SFA/gridcerf_data_dashboard/dash_app/my_geodata.csv')
-
-        if is_globe:
-            get_size = 1150
-        else:
-            get_size = 1750
-        
+        # print(df_coors_long.columns)
+        # print(df_coors_long[["LongitudeProj", "LatitudeProj"]].head(10))
         return pydeck.Layer(
                     id="feasibility-layer",
                     type="IconLayer",
@@ -176,7 +206,57 @@ def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode, is_compiled, 
                     # }
                     # rgb(60, 220, 255)
                 )
+    else:
 
+        print("COMMON LAYER")
+        # IS_COMPILED IS FALSE but fpath is NOT 
+        # print(list_of_dicts["dod_military_installations_conus"])
+        df_coors_long = read_layer(is_compiled=is_compiled, COMPILED_DIR=COMPILED_DIR, fpaths=fpaths)
+        df_coors_long, get_size = style_map_icons(adjust_mode=adjust_mode, df_coors_long=df_coors_long, is_globe=is_globe)
+
+        # print(df_coors_long.columns)
+        # print(df_coors_long[["LongitudeProj", "LatitudeProj"]].head(10))
+
+        df_coors_long = df_coors_long.head(216165)
+        
+        return pydeck.Layer(
+                    id="feasibility-layer",
+                    type="IconLayer",
+                    data=df_coors_long,
+                    get_icon="icon_data",
+                    get_size=get_size,#1150, # or 120 if you want best coverage
+                    size_units="meters",
+                    # size_scale=1,
+                    # iconAtlas: 'path/to/icon-atlas.png', ?
+                    # icon_mapping=icon_mapping,
+                    width_scale=20,
+                    get_width=1000,
+                    radius=500,
+                    get_radius=500,
+                    get_angle="Angle",
+                    get_pixel_offset=[0,1],
+                    get_position=["LongitudeProj", "LatitudeProj"],
+                    pickable=True,
+                    auto_highlight=True,
+                    stroked=True,
+                    opacity=0.5,
+                    cluster=True, # AB: Test
+                    transitions={
+                            # transition with a duration of 3000ms
+                            'get_position': 3000,  # Transition duration in milliseconds
+                            'get_size': 3000,
+                            # 'radius': 1000
+                            # getRadius: {
+                            #     duration: 3000,
+                            #     easing: d3.easeBackInOut,
+                            # },
+                        },
+                    # update_triggers={
+                    #     # 'get_position': ['year'],
+                    #     'get_icon': ['IsFeasible']
+                    # }
+                    # rgb(60, 220, 255)
+                )
 
 def plot_deckgl_globe(COMPILED_DIR, fpaths, selected_layers, adjust_mode, visibility_mode, is_compiled):
 
@@ -189,6 +269,7 @@ def plot_deckgl_globe(COMPILED_DIR, fpaths, selected_layers, adjust_mode, visibi
 
     deck_layers = []
 
+    print(selected_layers)
     for layer in selected_layers:
         layer = load_large_data(layer, COMPILED_DIR, fpaths, adjust_mode, is_compiled, is_globe=True)  # Load data, cached if previously loaded
         deck_layers.append(layer)
@@ -262,34 +343,71 @@ def plot_deckgl_map(COMPILED_DIR, fpaths, selected_layers, adjust_mode, visibili
 
     deck_layers = []
 
-    selected_layers = ["feasibility-layer"]
+    selected_layers = ["base-map" , "feasibility-layer"]
+    selected_layers = ["base-map-ocean", "base-map", "feasibility-layer"]
+    # selected_layers = ["feasibility-layer"] # PAST
     for layer in selected_layers:
         layer = load_large_data(layer, COMPILED_DIR, fpaths, adjust_mode, is_compiled, is_globe=False)  # Load data, cached if previously loaded
         deck_layers.append(layer)
 
-    if adjust_mode: # if true
+    if adjust_mode: # LIGHT MODE (true)
         r = pydeck.Deck(
             initial_view_state=view_state,
             map_style="mapbox://styles/mapbox/outdoors-v11", # this is like streets
             layers=deck_layers[0],
         )
         
-    else:
+    else: # DARK MODE
+        # Create a TileLayer with OpenStreetMap
+        osm_tile_layer = pydeck.Layer(
+            "TileLayer",
+            data=[],
+            get_tile_url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            tile_size=256,
+        )
+
+        print(len(deck_layers))
+
+        states_layer = pydeck.Layer(
+                        "GeoJsonLayer",
+                        id="states-map",
+                        data=STATES,
+                        stroked=True,
+                        filled=True,
+                        get_line_color=[0, 0, 0],
+                        # get_fill_color=[59, 150, 44], #[150, 150, 150] #[250, 250, 248] # near white
+                        get_line_width=1000,
+                        get_fill_color=[0, 0, 0, 0]  # Transparent fill (no color)
+                    )
+
+        deck_layers.append(states_layer)  
+
         r = pydeck.Deck(
             # views=[view],
-            initial_view_state=view_state,
+            # initial_view_state=view_state,
             # all of them here https://docs.mapbox.com/api/maps/styles/
             # map_style=pydeck.map_styles.LIGHT, # works
             # map_style=pydeck.map_styles.DARK, # works
             # map_style="mapbox://styles/mapbox/light-v10",
             # map_style="mapbox://styles/mapbox/streets-v11",
             # map_style="mapbox://styles/mapbox/dark-v10",
-            map_style="mapbox://styles/mapbox/satellite-streets-v11",
+            # map_style="mapbox://styles/mapbox/satellite-streets-v11", # HERE
             # map_style="mapbox://styles/mapbox/satellite-v9", # not useful but works
             # map_style="mapbox://styles/mapbox/outdoors-v11", # this is like streets
             # map_style="mapbox://styles/mapbox/navigation-day-v1",
             # map_style="mapbox://styles/mapbox/navigation-night-v1",
-            layers=deck_layers[0],
+            # layers=[osm_tile_layer,deck_layers[0]],
+            layers=deck_layers,
+            # map_style="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            # map_style="light_no_labels", # ‘light’, ‘dark’, ‘road’, ‘satellite’, "dark_no_labels", and "light_no_labels",
+            # map_style="https://{s}.tile.openstreetmap.org/5/10/15.png",
+            # map_style="https://{s}.tile.stamen.com/terrain/{z}/{x}/{y}.jpg", # doesn't work ... why not
+            # map_style="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            # map_style="https://{s}.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            # tile_layer={
+            #     "url": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            #     "subdomains": ["a", "b", "c"],  # Optional, OpenStreetMap uses subdomains
+            # }
             # parameters={"cull": True},
         ) 
 
@@ -298,7 +416,7 @@ def plot_deckgl_map(COMPILED_DIR, fpaths, selected_layers, adjust_mode, visibili
             r.to_json(), 
             id="deck-gl", 
             # tooltip=tooltip, 
-            mapboxKey=MAPBOX_TOKEN
+            # mapboxKey=MAPBOX_TOKEN
     )
     )
 
@@ -331,3 +449,9 @@ def plot_deckgl_map(COMPILED_DIR, fpaths, selected_layers, adjust_mode, visibili
         # map_style=pydeck.map_styles.OUTDOORS, # does not exist
         # map_style=pydeck.map_styles.TRAFFIC, #  does not exist
         # map_style="mapbox://styles/mapbox/light-v10",
+
+""" Some layers (e.g., ScatterplotLayer, IconLayer) are designed to 
+render individual points, and with large datasets, they might render 
+slowly due to the sheer number of DOM elements being created.
+
+"""

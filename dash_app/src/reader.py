@@ -83,7 +83,9 @@ def melt_and_reproject(array, TIF_df, source_crs, geo_crs):
 	bbox_proj = [[min_lat, min_lon],[max_lat, max_lon]]
 
 	# Remove NonFeasible
-	df_melted_feasible = df_melted[df_melted["IsFeasible"] != 1] # (216165, 5)
+	df_melted_feasible = df_melted[df_melted["IsFeasible"] != 1] 
+	# Compiled maps (216165, 5) around this many rows
+	# Common maps (6507162, 5) scale is so much larger ...
 
 	# the BELOW reprojects EVERYTHING EVEN THE BINARY (BOOLEAN, is feasible?) CELLS ...
 	proj_array = array.rio.reproject(geo_crs)

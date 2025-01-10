@@ -7,10 +7,10 @@ import os
 PORT = int(os.environ.get("PORT", 8060))
 REQUESETS_PATHNAME_PREFIX = "/"
 
-CONNECT_TO_LAMBDA = False
+CONNECT_TO_LAMBDA = True
 
 # FILE PATHS
-MAPBOX_TOKEN = open("../../mapbox_token.py").read() # mapbox api token
+# MAPBOX_TOKEN = open("../../mapbox_token.py").read() # mapbox api token
 
 if CONNECT_TO_LAMBDA:
 
@@ -33,6 +33,9 @@ else:
 
 
 COMPILED_DIR = os.path.join(DATA_DIR, "gridcerf/compiled/compiled_technology_layers")
+# COMMON_DIR = "gridcerf/common"
+# COMMON_DIR = "gridcerf/technology_specific"
+# COMMON_DIR = "gridcerf/scenario_specific"
 OUTDIR = "tmp"
 
 # REMINDER = "It's coors = (lat, lon) and ... LON = COLS = X ... LAT = ROWS = Y"

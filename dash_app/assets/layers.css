@@ -46,7 +46,8 @@
 }
 
 #hex-box {
-    background-color: #FF00FF;
+    /* background-color: #FF00FF; */
+    background-color: black;
     width: 15px;
     height: 15px;
     float: left;
