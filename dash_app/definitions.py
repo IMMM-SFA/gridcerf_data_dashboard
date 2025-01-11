@@ -22,7 +22,7 @@ if CONNECT_TO_LAMBDA:
     print("********** ", os.getenv('LAMBDA_TASK_ROOT'))
 
     if LAMBDA_TASK_ROOT is None:
-        print(" ********** ", "LAMBDA_TASK_ROOT is None"
+        print(" ********** ", "LAMBDA_TASK_ROOT is None")
         METADATA_DIR = './metadata'
     else:
         METADATA_DIR = os.path.join(LAMBDA_TASK_ROOT, "dash_app", "metadata")
