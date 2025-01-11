@@ -19,12 +19,12 @@ if CONNECT_TO_LAMBDA:
     DATASET_ID = "1ffea-emt93" # MSD-LIVE added dataset id that goes to DEV
     DATA_DIR = ""
     LAMBDA_TASK_ROOT = os.getenv('LAMBDA_TASK_ROOT')
-    print("********** ", os.getenv('LAMBDA_TASK_ROOT'))
 
     if LAMBDA_TASK_ROOT is None:
         print(" ********** ", "LAMBDA_TASK_ROOT is None")
         METADATA_DIR = './metadata'
     else:
+        print("********** ", os.getenv('LAMBDA_TASK_ROOT'))
         METADATA_DIR = os.path.join(LAMBDA_TASK_ROOT, "dash_app", "metadata")
 
 else:

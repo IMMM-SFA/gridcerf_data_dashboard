@@ -29,7 +29,7 @@ cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
 
 # SOURCED SCRIPTS
 from src.utilities import recur_dictify
-from definitions import CONNECT_TO_LAMBDA, REQUESETS_PATHNAME_PREFIX, METADATA_DIR, OUTDIR
+from definitions import LAMBDA_TASK_ROOT, CONNECT_TO_LAMBDA, REQUESETS_PATHNAME_PREFIX, METADATA_DIR, OUTDIR
 
 # PATHS
 tech_pathways_df = pd.read_csv(os.path.join(METADATA_DIR, "msdlive_tech_paths.csv")) 
@@ -43,8 +43,6 @@ pathway = ["ui_tech", "ui_subtype", "ui_feature", "ui_is_ccs", "ui_cooling_type"
 tech_pathways_dict = recur_dictify(df=tech_pathways_df[pathway])
 all_options = tech_pathways_dict ## sourced
 
-print(os.path.join(METADATA_DIR, "msdlive_tech_paths.csv"))
-print(os.path.join(METADATA_DIR, "layer_catalogue.csv"))
 layer_catalogue = pd.read_csv(os.path.join(METADATA_DIR, "layer_catalogue.csv"))
 
 layer_catalogue.rename(columns={'filename': 'label', 'filepath': 'value'}, inplace=True)
