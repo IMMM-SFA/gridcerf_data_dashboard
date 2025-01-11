@@ -7,7 +7,7 @@ import os
 PORT = int(os.environ.get("PORT", 8060))
 REQUESETS_PATHNAME_PREFIX = "/"
 
-CONNECT_TO_LAMBDA = True
+CONNECT_TO_LAMBDA = False
 
 # FILE PATHS
 # MAPBOX_TOKEN = open("../../mapbox_token.py").read() # mapbox api token
@@ -22,7 +22,7 @@ if CONNECT_TO_LAMBDA:
     print("********** ", os.getenv('LAMBDA_TASK_ROOT'))
 
     if LAMBDA_TASK_ROOT is None:
-        print(" ********** ", "here")
+        print(" ********** ", "LAMBDA_TASK_ROOT is None")
         METADATA_DIR = './metadata'
     else:
         METADATA_DIR = os.path.join(LAMBDA_TASK_ROOT, "dash_app", "metadata")
