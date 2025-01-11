@@ -43,7 +43,10 @@ pathway = ["ui_tech", "ui_subtype", "ui_feature", "ui_is_ccs", "ui_cooling_type"
 tech_pathways_dict = recur_dictify(df=tech_pathways_df[pathway])
 all_options = tech_pathways_dict ## sourced
 
+print(os.path.join(METADATA_DIR, "msdlive_tech_paths.csv"))
+print(os.path.join(METADATA_DIR, "layer_catalogue.csv"))
 layer_catalogue = pd.read_csv(os.path.join(METADATA_DIR, "layer_catalogue.csv"))
+
 layer_catalogue.rename(columns={'filename': 'label', 'filepath': 'value'}, inplace=True)
 list_of_dicts = layer_catalogue[['label', 'value']].to_dict(orient='records')
 
