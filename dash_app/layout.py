@@ -94,8 +94,8 @@ tabs = ["", "insights-tab", "layers-tab"]
 select_headers = ["Select a visualization tool", 
 					"Select a state", 
 					"Select a year", 
-					"Select a generation type",
-					"Select a generation sub-type",
+					"Select a technology type",
+					"Select a technology sub-type",
 					"Carbon Capture Sequestration (CCS)",
 					"Select a thermoelectric cooling type", 
 					"Select a Shared Socioeconomic Pathway (SSP)", #  Select a socioeconomic scenario
@@ -218,7 +218,7 @@ def create_app():
 	                         selected_className="active-tab",
 	                         children=[
 	                         			html.Br(),
-										html.P("Explore siting suitability layers for different generation types:",
+										html.P("Explore composite siting suitability layers for different technologies:",
 												className="guidance-text"), 
 										html.Div(id="tech-select-container",
 	                         					 className="select-container",

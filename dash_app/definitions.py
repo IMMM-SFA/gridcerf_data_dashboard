@@ -7,7 +7,7 @@ import os
 PORT = int(os.environ.get("PORT", 8060))
 REQUESETS_PATHNAME_PREFIX = "/"
 
-CONNECT_TO_LAMBDA = False
+CONNECT_TO_LAMBDA = True
 
 # FILE PATHS
 # MAPBOX_TOKEN = open("../../mapbox_token.py").read() # mapbox api token
