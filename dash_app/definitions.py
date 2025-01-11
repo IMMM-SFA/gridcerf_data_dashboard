@@ -33,9 +33,6 @@ else:
 
 
 COMPILED_DIR = os.path.join(DATA_DIR, "gridcerf/compiled/compiled_technology_layers")
-# COMMON_DIR = "gridcerf/common"
-# COMMON_DIR = "gridcerf/technology_specific"
-# COMMON_DIR = "gridcerf/scenario_specific"
 OUTDIR = "tmp"
 
 # REMINDER = "It's coors = (lat, lon) and ... LON = COLS = X ... LAT = ROWS = Y"
