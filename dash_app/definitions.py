@@ -17,7 +17,7 @@ CONNECT_TO_LAMBDA = True
 
 if CONNECT_TO_LAMBDA:
 
-    print("DEPLOYMENT 16")
+    print("DEPLOYMENT 17")
 
     SERVE_LOCALLY = False
     DATASET_ID = "1ffea-emt93" # MSD-LIVE added dataset id that goes to DEV
@@ -33,9 +33,11 @@ if CONNECT_TO_LAMBDA:
         print("********** LAMBDA_TASK_ROOT is ", os.getenv('LAMBDA_TASK_ROOT'))
         METADATA_DIR = os.path.join(DIR, "metadata")
         DATA_DIR = os.path.join(DIR, "data")
+        COMPILED_DIR = os.path.join(LAMBDA_TASK_ROOT, "gridcerf/compiled/compiled_technology_layers")
 
 else:
     CERF_DATA_DIR = "../../data/msdlive-gridcerf"
+    COMPILED_DIR = os.path.join(CERF_DATA_DIR, "gridcerf/compiled/compiled_technology_layers")
     METADATA_DIR = "./metadata"
     DATA_DIR = "./data"
     LAMBDA_TASK_ROOT = ""
@@ -43,7 +45,6 @@ else:
 
 print("SERVE_LOCALLY is ", SERVE_LOCALLY)
 
-COMPILED_DIR = os.path.join(CERF_DATA_DIR, "gridcerf/compiled/compiled_technology_layers")
 OUTDIR = "tmp"
 
 # REMINDER = "It's coors = (lat, lon) and ... LON = COLS = X ... LAT = ROWS = Y"
