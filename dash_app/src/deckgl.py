@@ -35,11 +35,12 @@ import xyzservices.providers as xyz
 # SOURCED SCRIPTS
 from src.reader import open_as_raster
 from layout import cache, list_of_dicts
-from definitions import OUTDIR, DATA_DIR, LAMBDA_TASK_ROOT #, MAPBOX_TOKEN
+from definitions import OUTDIR, CERF_DATA_DIR, LAMBDA_TASK_ROOT, DATA_DIR #, MAPBOX_TOKEN
 
 # DATA PATHS
 STATES = "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/refs/heads/master/data/geojson/us-states.json"
-OCEAN_PATH = os.path.join(LAMBDA_TASK_ROOT, "data/ne_50m_ocean.geojson")
+OCEAN_PATH = os.path.join(DATA_DIR, "ne_50m_ocean.geojson")
+# /var/task/data/ne_50m_ocean.geojson
 LAND = "https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_0_scale_rank.geojson"
 
 def read_layer(is_compiled, COMPILED_DIR, fpaths):
@@ -54,7 +55,7 @@ def read_layer(is_compiled, COMPILED_DIR, fpaths):
     if is_compiled:
         TIFPATH = os.path.join(COMPILED_DIR, fpaths[0])
     else:
-        TIFPATH = os.path.join(DATA_DIR, fpaths[0])
+        TIFPATH = os.path.join(CERF_DATA_DIR, fpaths[0])
     # print(TIFPATH) # ../../data/msdlive-gridcerf/gridcerf/compiled/compiled_technology_layers/ssp5/2025/biomass/gridcerf_biomass_conventional_no-ccs_dry.tif
     data_df, array, source_crs, geo_crs, df_coors_long, boundingbox, img = open_as_raster(TIFPATH=TIFPATH, is_reproject=True, is_convert_to_png=False)
     
