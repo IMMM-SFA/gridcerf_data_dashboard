@@ -14,7 +14,7 @@ CONNECT_TO_LAMBDA = True
 
 if CONNECT_TO_LAMBDA:
 
-    print("DEPLOYMENT 10")
+    print("DEPLOYMENT 11")
 
     # https://gridcerf.dev.msdlive.org/
 
@@ -30,9 +30,9 @@ if CONNECT_TO_LAMBDA:
         METADATA_DIR = os.path.join(LAMBDA_TASK_ROOT, "dash_app", "metadata")
 
 else:
-	DATA_DIR = "../../data/msdlive-gridcerf"
-	METADATA_DIR = "./metadata"
-	LAMBDA_TASK_ROOT = None
+    DATA_DIR = "../../data/msdlive-gridcerf"
+    METADATA_DIR = "./metadata"
+    LAMBDA_TASK_ROOT = None
 
 
 COMPILED_DIR = os.path.join(DATA_DIR, "gridcerf/compiled/compiled_technology_layers")

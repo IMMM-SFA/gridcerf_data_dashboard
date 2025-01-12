@@ -37,7 +37,10 @@ from src.reader import open_as_raster
 from layout import cache, list_of_dicts
 from definitions import OUTDIR, DATA_DIR #, MAPBOX_TOKEN
 
+# DATA PATHS
 STATES = "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/refs/heads/master/data/geojson/us-states.json"
+OCEAN_PATH = os.path.join(LAMBDA_TASK_ROOT, "data/ne_50m_ocean.geojson")
+LAND = "https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_0_scale_rank.geojson"
 
 def read_layer(is_compiled, COMPILED_DIR, fpaths):
 
@@ -111,7 +114,7 @@ def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode, is_compiled, 
 
     if layer_name == "base-map-ocean":
 
-        OCEANS = json.load(open('data/ne_50m_ocean.geojson', 'r', encoding='utf-8'))
+        OCEANS = json.load(open(OCEAN_PATH, 'r', encoding='utf-8'))
 
         # #D4DADC and RBG is 212, 218, 220
 
@@ -136,8 +139,6 @@ def load_large_data(layer_name, COMPILED_DIR, fpaths, adjust_mode, is_compiled, 
                 
 
     if layer_name == "base-map":
-
-        LAND = "https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_0_scale_rank.geojson"
 
         if adjust_mode:  # When the switch is "True"
             # fill_color = [250, 250, 248] # near white
