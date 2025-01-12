@@ -29,7 +29,7 @@ cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
 
 # SOURCED SCRIPTS
 from src.utilities import recur_dictify
-from definitions import LAMBDA_TASK_ROOT, CONNECT_TO_LAMBDA, REQUESETS_PATHNAME_PREFIX, METADATA_DIR, OUTDIR
+from definitions import LAMBDA_TASK_ROOT, CONNECT_TO_LAMBDA, SERVE_LOCALLY, REQUESETS_PATHNAME_PREFIX, METADATA_DIR, OUTDIR
 
 # PATHS
 tech_pathways_df = pd.read_csv(os.path.join(METADATA_DIR, "msdlive_tech_paths.csv")) 
@@ -130,7 +130,7 @@ def create_app():
 		                		   {"name": "viewport", "content": "width=device-width, initial-scale=1"},
 		                           {"name": "description", "content": "Geospatial Raster Input Data for Capacity Expansion Regional Feasibility (GRIDCERF). A high-resolution energy mapper."}
 		                        ],
-						serve_locally = False if LAMBDA_TASK_ROOT is not (None, "") else True, # must be False for app deployment on AWS lambda
+						serve_locally = SERVE_LOCALLY, # must be False for app deployment on AWS lambda
 						server=server,
 						)
 
