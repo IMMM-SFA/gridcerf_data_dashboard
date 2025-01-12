@@ -35,7 +35,7 @@ import xyzservices.providers as xyz
 # SOURCED SCRIPTS
 from src.reader import open_as_raster
 from layout import cache, list_of_dicts
-from definitions import OUTDIR, DATA_DIR #, MAPBOX_TOKEN
+from definitions import OUTDIR, DATA_DIR, LAMBDA_TASK_ROOT #, MAPBOX_TOKEN
 
 # DATA PATHS
 STATES = "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/refs/heads/master/data/geojson/us-states.json"

@@ -17,7 +17,7 @@ CONNECT_TO_LAMBDA = True
 
 if CONNECT_TO_LAMBDA:
 
-    print("DEPLOYMENT 12")
+    print("DEPLOYMENT 13")
 
     DATASET_ID = "1ffea-emt93" # MSD-LIVE added dataset id that goes to DEV
     DATA_DIR = ""
@@ -33,7 +33,7 @@ if CONNECT_TO_LAMBDA:
 else:
     DATA_DIR = "../../data/msdlive-gridcerf"
     METADATA_DIR = "./metadata"
-    LAMBDA_TASK_ROOT = None
+    LAMBDA_TASK_ROOT = ""
 
 
 COMPILED_DIR = os.path.join(DATA_DIR, "gridcerf/compiled/compiled_technology_layers")
