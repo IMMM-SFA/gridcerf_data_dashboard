@@ -26,13 +26,17 @@ if CONNECT_TO_LAMBDA:
 	from io import BytesIO
 
 from src.reader import open_as_raster
-from src.deckgl import plot_deckgl_globe, plot_deckgl_map
+from src.deckgl2 import plot_map
 from layout import app, tech_pathways_df, src_meta, all_options
 from layout import intro_text, section_headers, title_text, description_text, funding_text, data_text
 
 # -----------------------------------------------------------------------------
 # Define dash app callbacks.
 # -----------------------------------------------------------------------------
+
+# -------------------------------------------
+# Right-hand panel.
+# -------------------------------------------
 
 @app.callback(
     Output('subtech-select', 'options'),
@@ -152,9 +156,15 @@ def show_hide_element(feature, is_ccs, cooling, capacity_factor):
 	return feature_show, is_css_show, cooling_show, cf_show
 
 
+# -------------------------------------------
+# DeckGL Mapping.
+# -------------------------------------------
+
 @app.callback(
-    [Output(component_id="map", component_property="children"),
-	 Output('last-btn-pressed', 'children')],
+    # [,
+	# #  Output('last-btn-pressed', 'children')
+	#  ],
+	 Output(component_id="map", component_property="children"),
     [
 	Input(component_id="year-select", component_property="value"),
 	Input(component_id="ssp-select", component_property="value"),
@@ -165,32 +175,20 @@ def show_hide_element(feature, is_ccs, cooling, capacity_factor):
 	Input(component_id="cooling-type-select", component_property="value"), 
 	Input(component_id="capacity-factor-select", component_property="value"),
 	# Input(component_id="layer-selector", component_property="value"),
-	Input('adjust-mode', 'value'),
+	# Input('adjust-mode', 'value'),
 	Input('button1', 'n_clicks'),
 	Input('button2', 'n_clicks'),
-	Input('last-btn-pressed', 'children'),
+	# Input('last-btn-pressed', 'children'),
 	# Input(component_id="opacity-btn", component_property="n_clicks"),
-	Input(component_id="visibility-btn", component_property="n_clicks"),
+	# Input(component_id="visibility-btn", component_property="n_clicks"),
 	Input(component_id="tabnav", component_property="value"),
 	Input('multi-layer-dropdown', 'value')
     ],
 )
 
-def map(year, ssp,
-		tech, subtech, feature,
-		is_ccs, coolingtype, capacity_factor, 
-		# selected_layers, 
-		adjust_mode, btn1, btn2, last_pressed,
-		# opacity_clicks, 
-		visible_clicks,
-		tab_id,
-		layer_catalogue
+def map(year, ssp, tech, subtech, feature, is_ccs, coolingtype, capacity_factor, 
+		btn1, btn2, tab_id, layer_catalogue
 		):
-
-    # -----------------------------------------------------------------------------
-    # Creates and displays map by querying a "database" table of all pathways
-    # to their filenames.
-    # -----------------------------------------------------------------------------
 
 	# print(" --------------------------------------------------------------- ")
 	year = str(year)
@@ -203,93 +201,41 @@ def map(year, ssp,
 									   ui_is_ccs in @is_ccs and \
 									   ui_cooling_type in @coolingtype and \
 									   ui_capacity_factor in @capacity_factor")
-
-	fpaths = query_df["fpath"].values
-	# print(fpaths) # ['ssp5/2025/biomass/gridcerf_biomass_conventional_no-ccs_dry.tif']
-	# i = 0
-	# for fpath in fpaths:
-	# 	TIFPATH = os.path.join(COMPILED_DIR, fpath)
-	# 	data_array, array, source_crs, df_coors_long, boundingbox, img = open_as_raster(TIFPATH=TIFPATH, is_reproject=False, is_convert_to_png=False)
-	# 	i += 1
-
-	basemap_layers = ["base-map-ocean", "base-map"]
-
-	if visible_clicks % 2 == 0:
-		visibility_mode = True
-		selected_layers = ["base-map-ocean", "base-map", "feasibility-layer"]
-	else: 
-		visibility_mode = False
-		selected_layers = basemap_layers
-
-	if tab_id == "insights-tab":
-		is_compiled = True
-	if tab_id == "layers-tab": 
-		is_compiled = False
-		selected_layers = basemap_layers + layer_catalogue
-		fpaths = layer_catalogue
-	
-	# DeckGL
-	ctx = callback_context # there are multiple callback contextes in this  
+	fpaths = query_df["fpath"].values # ['ssp5/2025/biomass/gridcerf_biomass_conventional_no-ccs_dry.tif']
+	index = f"{ssp}_{year}_{tech}_{subtech}_{feature}_{is_ccs}_{coolingtype}_{capacity_factor}"
 
 	if ctx.triggered:
 		
 		clicked_id = ctx.triggered[0]['prop_id'].split('.')[0]
+		print(clicked_id)
+		# clicked_id_ = clicked_id + "-" + last_pressed
 
-		# if adjust_mode:
-		clicked_id_ = clicked_id + "-" + last_pressed
-		# "button2-True"
-		# "button2-False"
-		# "adjust-mode-True"
-		# "adjust-mode-False"
+		fig_div = plot_map(index=index, fpaths=fpaths)
 
-		# clicked_id == adjust-mode from light to dark then need go into button2
-		if clicked_id == 'button1':
-			fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
-										adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
-			last_pressed = "button1"
-		# elif clicked_id_ == 'adjust-mode-button1':
-		# 	fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, adjust_mode=adjust_mode)
-		# 	last_pressed = "button1"
-		elif clicked_id == 'button2':
-			fig_div = plot_deckgl_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
-										adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
-			last_pressed = "button2"
-		elif clicked_id_ == "adjust-mode-button2":
-			fig_div = plot_deckgl_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
-									adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
-			last_pressed = "button2"
-		else:
-			# default (or if fails all other options it will become a globe) 
-			fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
-									adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
-			last_pressed = "button1"
+		return fig_div
+
 	else:
-		fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
-								adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
-		last_pressed = "button1"
+		# print(ctx.triggered)
+		# fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
+		# 						adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
+		# last_pressed = "button1"
 
-	return fig_div, last_pressed
+		raise PreventUpdate
+	
 
-@app.callback(
-    Output('adjust-mode', 'color'),
-    # Output('output', 'children'),
-    Input('adjust-mode', 'value')
-)
-def update_switch(value):
-    if value:  # When the switch is "True"
-        return "#fce17c"
-    else:  # When the switch is "False"
-        return 'blue'
+
+# -------------------------------------------
+# Map settings and tools.
+# -------------------------------------------
 
 @app.callback(
 	Output('banner', 'style'),
-	# Output('app-logo', 'style'),
 	Output('page-body', 'style'),
-    Input('adjust-mode', 'value')
+    Input('btn-text', 'children')
 )
 def update_mode(value):
-	if value:  # When the switch is "True"
-		header_banner =  {
+	if value == "button1":  # When the switch is "True" || LIGHT
+		header_banner =  { # LIGHT
 			"width": "100%",
 			"background-color": "#2C7E9E",
 			"display": "inline-block",
@@ -304,13 +250,12 @@ def update_mode(value):
 		# }
 
 		page_body = {
-			"background-color": "white",
-			# "background-color": "rgba(255, 255, 255, 0.1)"
+			"background-color": "white", # "rgba(255, 255, 255, 0.1)"
 		}
 		return header_banner, page_body
 	
-	else:  # When the switch is "False"
-		header_banner =  {
+	elif value == "button2":  # When the switch is "False" || DARK
+		header_banner =  { 
 		"width": "100%",
 		"background-color": "#1F244D", 
 		"display": "inline-block",
@@ -325,8 +270,7 @@ def update_mode(value):
 		# }
 
 		page_body = {
-			"background-color": "black",
-			# "background-color": "rgba(0, 0, 0, 0.1)" # rgba(0, 0, 0, 0.5)
+			"background-color": "black", # rgba(0, 0, 0, 0.5)
 		}
 		return header_banner, page_body
 
@@ -334,7 +278,8 @@ def update_mode(value):
 @app.callback(
     [
      Output('button1', 'className'),
-     Output('button2', 'className')
+     Output('button2', 'className'),
+	 Output('btn-text', 'children')
 	 ],
     [Input('button1', 'n_clicks'),
      Input('button2', 'n_clicks')]
@@ -348,11 +293,11 @@ def update_output(n_clicks1, n_clicks2):
 		clicked_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
 		if clicked_id == 'button1':
-			return 'button-selected', 'button'
+			return 'button-selected', 'button', "button1"
 		elif clicked_id == 'button2':
-			return 'button', 'button-selected'
+			return 'button', 'button-selected', "button2"
 	else:
-		return "button-selected", "button"
+		return "button-selected", "button", "button1" # initialize on the sun (check if only falls into here for this case, b/c otherwise could be this 'button', 'button-selected' )
 
 @app.callback(
     [Output(component_id="expandable-box", component_property="style"),
@@ -363,7 +308,7 @@ def update_output(n_clicks1, n_clicks2):
 	]
 )
 
-def toggle_expand(expand_clicks, close_clicks):
+def expand_box(expand_clicks, close_clicks):
 
 	expanded_box_css = {"display": "block"}
 	# expanded_btn_css = {"display": "block"}
@@ -416,16 +361,32 @@ def toggle_expand(expand_clicks, close_clicks):
 
 	return expanded_box_css, expanded_btn_css # Default state: expanded
 
-@app.callback(
-    Output("visibility", "src"),
-    Input("visibility-btn", "n_clicks"),
-)
-def toggle_eye_icon(n_clicks):
+# -----------------------------------------------------------------------------
+# Older callbacks.
+# -----------------------------------------------------------------------------
 
-	if n_clicks % 2 == 0: # eye-open
-		return app.get_asset_url("icons/map_icons/eye-open.svg")
-	else: # eye-closed
-		return app.get_asset_url("icons/map_icons/eye-slashed.svg")
+# @app.callback(
+#     Output('adjust-mode', 'color'),
+#     # Output('output', 'children'),
+#     Input('adjust-mode', 'value')
+# )
+# def update_switch(value):
+#     if value:  # When the switch is "True"
+#         return "#fce17c"
+#     else:  # When the switch is "False"
+#         return 'blue'
+
+
+# @app.callback(
+#     Output("visibility", "src"),
+#     Input("visibility-btn", "n_clicks"),
+# )
+# def toggle_eye_icon(n_clicks):
+
+# 	if n_clicks % 2 == 0: # eye-open
+# 		return app.get_asset_url("icons/map_icons/eye-open.svg")
+# 	else: # eye-closed
+# 		return app.get_asset_url("icons/map_icons/eye-slashed.svg")
 
 # -----------------------------------------------------------------------------
 # App runs here. Define configurations, proxies, etc.
@@ -436,3 +397,28 @@ if CONNECT_TO_LAMBDA:
 else:
 	if __name__ == "__main__":
 		app.run_server(port=PORT, debug=True)
+
+
+
+
+		# # clicked_id == adjust-mode from light to dark then need go into button2
+		# if clicked_id == 'button1':
+		# 	fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
+		# 								adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
+		# 	last_pressed = "button1"
+		# # elif clicked_id_ == 'adjust-mode-button1':
+		# # 	fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, adjust_mode=adjust_mode)
+		# # 	last_pressed = "button1"
+		# elif clicked_id == 'button2':
+		# 	fig_div = plot_deckgl_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
+		# 								adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
+		# 	last_pressed = "button2"
+		# elif clicked_id_ == "adjust-mode-button2":
+		# 	fig_div = plot_deckgl_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
+		# 							adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
+		# 	last_pressed = "button2"
+		# else:
+		# 	# default (or if fails all other options it will become a globe) 
+		# 	fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
+		# 							adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
+		# 	last_pressed = "button1"

@@ -162,6 +162,35 @@ def create_app():
 					className="daq-toggle-switch",
 					value=False,
 					)
+	
+	def mode_switch2():
+		return html.Div([
+					html.Div('button1', id='btn-text', style={'display': 'none'}),
+					# html.Div('button1', id='last-btn-pressed', style={'display': 'none'}),
+					html.Div(id='map-selector',
+							 children=[
+								html.Button(
+									children=[
+										html.Img(id="sun_preview", src=app.get_asset_url("icons/map_icons/sun2.svg")),
+									],
+									id='button1',
+									className='button-selected',  # Initially selected
+									n_clicks=1
+								),
+						html.Button(
+							children=[
+								# html.Img(id="flat_preview", src=app.get_asset_url("previews/2d_preview.png")),
+								html.Img(id="moon_preview", src=app.get_asset_url("icons/map_icons/moon2.svg")),
+								# html.P('2D Map', className="button-text")
+							],
+							id='button2',
+							className='button',
+							n_clicks=0
+						)
+					], 
+					),
+				])
+
 
 	def table_card():
 
@@ -487,9 +516,7 @@ def create_app():
 							 children=[
 								html.Button(
 									children=[
-										# html.Img(id="globe_preview", src=app.get_asset_url("previews/globe_preview.png")),
 										html.Img(id="globe_preview", src=app.get_asset_url("icons/map_icons/globe-thicker.svg")),
-										# html.P('Globe', className="button-text")
 									],
 									id='button1',
 									className='button-selected',  # Initially selected
@@ -528,8 +555,9 @@ def create_app():
 							),
 							about(),
 							nav(),
-							mode_switch(),
-							map_selector(),
+							# mode_switch(),
+							# map_selector(),
+							mode_switch2(),
 							html.Div(id="layer-container",
 									 children=[
 											# html.Button("X", id="close-layer-button", className="close-btn"),
@@ -553,14 +581,14 @@ def create_app():
 																	# 	# className='button-selected',  # Initially selected
 																	# 	n_clicks=1
 																	# ),
-																	html.Button(
-																		id="visibility-btn",
-																		children=[
-																			html.Img(id="visibility", src=app.get_asset_url("icons/map_icons/eye-open.svg")),
-																		],
-																		# className='button-selected',  # Initially selected
-																		n_clicks=2
-																	),
+																	# html.Button(
+																	# 	id="visibility-btn",
+																	# 	children=[
+																	# 		html.Img(id="visibility", src=app.get_asset_url("icons/map_icons/eye-open.svg")),
+																	# 	],
+																	# 	# className='button-selected',  # Initially selected
+																	# 	n_clicks=2
+																	# ),
 																])
 														
 													]

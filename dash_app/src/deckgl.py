@@ -25,9 +25,9 @@ import json
 import dash
 from dash import html
 import dash_deck
-import pydeck
+import pydeck as pdk
 import numpy as np
-# import geopandas as gpd
+import geopandas as gpd
 import pandas as pd
 pd.options.mode.chained_assignment = None
 import xyzservices.providers as xyz
@@ -38,10 +38,11 @@ from layout import cache, list_of_dicts
 from definitions import OUTDIR, CERF_DATA_DIR, LAMBDA_TASK_ROOT, DATA_DIR #, MAPBOX_TOKEN
 
 # DATA PATHS
-STATES = "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/refs/heads/master/data/geojson/us-states.json"
-OCEAN_PATH = os.path.join(DATA_DIR, "ne_50m_ocean.geojson")
+STATES = os.path.join(DATA_DIR, "us-state-polygons.json") # "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/refs/heads/master/data/geojson/us-states.json"
+OCEAN_PATH = os.path.join(DATA_DIR, "ne_50m_admin_0_scale_rank.geojson")
 # /var/task/data/ne_50m_ocean.geojson
-LAND = "https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_0_scale_rank.geojson"
+LAND = os.path.join(DATA_DIR, "ne_50m_ocean.geojson") # "https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_0_scale_rank.geojson"
+
 
 def read_layer(is_compiled, COMPILED_DIR, fpaths):
 

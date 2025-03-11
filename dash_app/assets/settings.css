@@ -28,7 +28,7 @@
 
 
 
-#globe_preview, #flat_preview {
+#globe_preview, #flat_preview, #sun_preview, #moon_preview {
     width: 30px; 
     height: 30px;
 }
@@ -52,14 +52,16 @@
 }
 
 .button:hover {
-    /* background-color: #f0f0f0;  */
+    /* background-color: #486bdb;  */
+    /* filter: var(--white-img); */
 }
 
 .button-selected {
     border: none;
     margin-left: 10px; 
     margin-right: 10px; 
-    background-color: #a0d3a0; /* Darker shade when selected */
+    /* background-color: #a0d3a0;  */
+    background-color: #c6cccf;
     border-radius: 25px;
     transition: background-color 0.3s ease;
 }

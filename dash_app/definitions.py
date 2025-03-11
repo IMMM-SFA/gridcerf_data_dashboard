@@ -10,7 +10,7 @@ import os
 PORT = int(os.environ.get("PORT", 8060))
 REQUESETS_PATHNAME_PREFIX = "/"
 
-CONNECT_TO_LAMBDA = True
+CONNECT_TO_LAMBDA = False
 
 # FILE PATHS
 # MAPBOX_TOKEN = open("../../mapbox_token.py").read() # mapbox api token
@@ -20,7 +20,8 @@ if CONNECT_TO_LAMBDA:
     print("DEPLOYMENT 18")
 
     SERVE_LOCALLY = False
-    DATASET_ID = "1ffea-emt93" # MSD-LIVE added dataset id that goes to DEV
+    DATASET_ID = "w85m1-f5148" # prod
+    # 1ffea-emt93: MSD-LIVE added dataset id that goes to DEV
     DATA_DIR = ""
     LAMBDA_TASK_ROOT = os.getenv('LAMBDA_TASK_ROOT')
     DIR = os.path.join(LAMBDA_TASK_ROOT, "dash_app")
