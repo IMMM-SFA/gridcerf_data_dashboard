@@ -458,3 +458,16 @@ render individual points, and with large datasets, they might render
 slowly due to the sheer number of DOM elements being created.
 
 """
+
+
+""" 
+
+For progressive rendering with pydeck, there's no built-in “progressive” mode.
+However, you can emulate progressive rendering by splitting your layers 
+into groups and then loading them incrementally. For example, you might 
+first render the static (or simplified) layers and then, after the map 
+has loaded, use a callback (or a client-side update) to add in the dynamic layers. 
+This can be done by updating the deck configuration in a Dash callback after 
+the initial rendering is complete, thereby reducing the initial rendering time.
+
+"""

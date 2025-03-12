@@ -14,7 +14,8 @@
     bottom: 0;
     right: 0;
     width: 250px; /* Set the desired width */
-    height: 150px;
+    /* height: 150px; */
+    height: 225px;
     margin-bottom: 10px;
     margin-right: 270px;
     flex-direction: column;
@@ -25,7 +26,7 @@
     transform-origin: bottom right; /* Shrink from top left */
 }
 
-#layer-funcs-container{
+.layer-funcs-container{
     /* display: inline; */
     width: 100%;
     margin-left: 15px;
@@ -39,15 +40,15 @@
     margin-right: 15px;
 }
 
-#layer-name-container{
+.layer-name-container{
     margin-left: 20px;
     display: flex;
     align-items: center;     /* Vertically centers */
 }
 
-#hex-box {
+.hex-box {
     /* background-color: #FF00FF; */
-    background-color: black;
+    /* background-color: black; */
     width: 15px;
     height: 15px;
     float: left;
@@ -56,9 +57,15 @@
     border-radius: 2px;
 }
 
-#layer-name{
-    padding: 0;
+#hex-box1 {
+    background-color: black;
 }
+#hex-box2 {
+    background-color: #ff00ff;
+    height: 5px;
+    border-radius: 0px;
+}
+
 
 #opacity {
     width: 15px; 
@@ -95,6 +102,7 @@
     font-size: 13px;
     color: #545454; 
     font-weight: 300;
+    padding: 0;
 }
 
 

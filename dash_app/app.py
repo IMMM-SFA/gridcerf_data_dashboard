@@ -11,6 +11,7 @@
 import os
 import sys
 import yaml
+import time
 
 ## web visualization and interactive libraries
 from dash.dependencies import Input, Output, State
@@ -176,23 +177,27 @@ def show_hide_element(feature, is_ccs, cooling, capacity_factor):
 	Input(component_id="capacity-factor-select", component_property="value"),
 	# Input(component_id="layer-selector", component_property="value"),
 	# Input('adjust-mode', 'value'),
-	Input('button1', 'n_clicks'),
-	Input('button2', 'n_clicks'),
+	# Input('button1', 'n_clicks'),
+	# Input('button2', 'n_clicks'),
 	# Input('last-btn-pressed', 'children'),
 	# Input(component_id="opacity-btn", component_property="n_clicks"),
 	# Input(component_id="visibility-btn", component_property="n_clicks"),
+	Input('btn-text', 'children'),
 	Input(component_id="tabnav", component_property="value"),
 	Input('multi-layer-dropdown', 'value')
     ],
 )
 
 def map(year, ssp, tech, subtech, feature, is_ccs, coolingtype, capacity_factor, 
-		btn1, btn2, tab_id, layer_catalogue
+		# btn1, btn2, 
+		btn_text,
+		tab_id, layer_catalogue
 		):
 
+	start = time.time()
 	# print(" --------------------------------------------------------------- ")
 	year = str(year)
-	# print([ssp, year, tech, subtech, feature, is_ccs, coolingtype, capacity_factor])
+	# print([ssp, year, tech, subtech, feature, is_ccs, coolingtype, capacity_factor, year])
 	query_df = tech_pathways_df.query("ui_ssp in @ssp and \
 									   ui_year in @year and \
 									   ui_tech in @tech and \
@@ -204,22 +209,35 @@ def map(year, ssp, tech, subtech, feature, is_ccs, coolingtype, capacity_factor,
 	fpaths = query_df["fpath"].values # ['ssp5/2025/biomass/gridcerf_biomass_conventional_no-ccs_dry.tif']
 	index = f"{ssp}_{year}_{tech}_{subtech}_{feature}_{is_ccs}_{coolingtype}_{capacity_factor}"
 
+	if btn_text == "button2": # dark 
+		styling_dict = {"land": [48, 105, 59],
+						"ocean": [0, 31, 72],
+						"states": [66, 133, 55]
+						}
+	elif btn_text == "button1": # light
+		styling_dict = {"land": [228, 235, 194],
+						"ocean": [116, 206, 240],
+						"states": [223, 234, 172],
+						}
+	else:
+		print('no btn!')
+
+
 	if ctx.triggered:
 		
 		clicked_id = ctx.triggered[0]['prop_id'].split('.')[0]
-		print(clicked_id)
-		# clicked_id_ = clicked_id + "-" + last_pressed
 
-		fig_div = plot_map(index=index, fpaths=fpaths)
+		end = time.time()
+		print(end-start) # takes 0.01 seoncds
+		# TODO: TRY CROPPING THE OCEANS SINCE I
+		fig_div = plot_map(index=index, fpaths=fpaths, styling_dict=styling_dict) # takes 2.6 seconds
+		mapped_time = time.time()
+		print("Plot Map: ", mapped_time-end)
 
 		return fig_div
 
 	else:
-		# print(ctx.triggered)
-		# fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
-		# 						adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
-		# last_pressed = "button1"
-
+		print("don't update!")
 		raise PreventUpdate
 	
 
@@ -234,6 +252,9 @@ def map(year, ssp, tech, subtech, feature, is_ccs, coolingtype, capacity_factor,
     Input('btn-text', 'children')
 )
 def update_mode(value):
+
+	time.sleep(4)
+
 	if value == "button1":  # When the switch is "True" || LIGHT
 		header_banner =  { # LIGHT
 			"width": "100%",
@@ -250,7 +271,7 @@ def update_mode(value):
 		# }
 
 		page_body = {
-			"background-color": "white", # "rgba(255, 255, 255, 0.1)"
+			"background-color": "#74cff0", #"white", # "rgba(255, 255, 255, 0.1)"
 		}
 		return header_banner, page_body
 	
@@ -270,7 +291,7 @@ def update_mode(value):
 		# }
 
 		page_body = {
-			"background-color": "black", # rgba(0, 0, 0, 0.5)
+			"background-color": "#001f48", #"black", # rgba(0, 0, 0, 0.5)
 		}
 		return header_banner, page_body
 
@@ -396,29 +417,7 @@ if CONNECT_TO_LAMBDA:
 	print("Sending app to the get_wsgi_handler ... ")
 else:
 	if __name__ == "__main__":
-		app.run_server(port=PORT, debug=True)
-
-
-
-
-		# # clicked_id == adjust-mode from light to dark then need go into button2
-		# if clicked_id == 'button1':
-		# 	fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
-		# 								adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
-		# 	last_pressed = "button1"
-		# # elif clicked_id_ == 'adjust-mode-button1':
-		# # 	fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, adjust_mode=adjust_mode)
-		# # 	last_pressed = "button1"
-		# elif clicked_id == 'button2':
-		# 	fig_div = plot_deckgl_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
-		# 								adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
-		# 	last_pressed = "button2"
-		# elif clicked_id_ == "adjust-mode-button2":
-		# 	fig_div = plot_deckgl_map(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
-		# 							adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
-		# 	last_pressed = "button2"
-		# else:
-		# 	# default (or if fails all other options it will become a globe) 
-		# 	fig_div = plot_deckgl_globe(COMPILED_DIR=COMPILED_DIR, fpaths=fpaths, selected_layers=selected_layers, 
-		# 							adjust_mode=adjust_mode, visibility_mode=visibility_mode, is_compiled=is_compiled)
-		# 	last_pressed = "button1"
+		app.run_server(port=PORT, debug=True, use_reloader=True, dev_tools_ui=True,
+						dev_tools_props_check=True, 
+						dev_tools_hot_reload=False,
+						) # disabling hot reloading

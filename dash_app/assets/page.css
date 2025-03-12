@@ -18,7 +18,8 @@ body {
 
 #page-body {
     height: var(--body--height);
-    background: white;
+    /* background: white; */
+    background: #74cff0;
     /* background: rgba(255, 255, 255, 0.1); */
     display: flex;
     flex: auto;

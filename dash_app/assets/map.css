@@ -1,3 +1,6 @@
+#map {
+    z-index: 0 !important;
+}
 #deck-gl {
     /* left: auto !important; */
     /* top: auto !important; */
@@ -9,7 +12,7 @@
     left: auto !important;
     top: auto !important;
     position: relative !important;
-    z-index: 1 !important;
+    z-index: 0 !important;
     height: var(--body--height) !important; /* Adjust width based on viewport height */
     width: calc(100vw - 0px) !important; /* Adjust width based on viewport width */
     /* width: 100% !important; */
@@ -20,5 +23,14 @@
 }
 
 .dash-loading .dash-loading-content {
-    background-color: transparent; /* Make loading content background transparent */
+    background-color: transparent; 
+    /* Make loading content background transparent */
+}
+
+.loader-wrapper > div {
+    visibility: visible !important;
+}
+
+#loader {
+    z-index: 1;
 }

@@ -541,6 +541,7 @@ def create_app():
 		return html.Div(
 						children=[
 							dcc.Loading(
+									parent_className="loader-wrapper",
 									id="loading",
 									type="circle",
 									# style={"backgroundColor": "transparent"},
@@ -568,9 +569,9 @@ def create_app():
 											# 			html.P("Basemap"),
 											# 		]
 											# ),
-											html.Div(id="layer-funcs-container",
+											html.Div(id="layer-funcs-container", # TODO: Fix duplicate
 													children=[
-														html.Div("Technology Layer", id="layer-concept", className="layer-concept"),
+														html.Div("Technology Layer", className="layer-concept"),
 														html.Div(id="layer-funcs", className="layer-funcs",
 																children=[
 																	# html.Button(
@@ -593,10 +594,25 @@ def create_app():
 														
 													]
 											),
-											html.Div(id="layer-name-container",
+											html.Div(className="layer-name-container",
 													children=[
-														html.Div(id="hex-box"),
-														html.Div("SUITABLE SITING AREA", id="layer-name", className="layer-name"),
+														html.Div(id="hex-box1", className="hex-box"),
+														html.Div("SUITABLE SITING AREA", className="layer-name"),
+														# html.Div("FEASIBILITY", id="layer-name", className="layer-name"),
+														# Suitable Siting Area
+													]
+											),
+											html.Hr(className="hr3"),
+											html.Div(id="layer-funcs-container2",
+													children=[
+														html.Div("Electricity Grid", className="layer-concept"),
+														
+													]
+											),
+											html.Div(className="layer-name-container",
+													children=[
+														html.Div(id="hex-box2", className="hex-box"),
+														html.Div("TRANSMISSION LINES", className="layer-name"),
 														# html.Div("FEASIBILITY", id="layer-name", className="layer-name"),
 														# Suitable Siting Area
 													]
