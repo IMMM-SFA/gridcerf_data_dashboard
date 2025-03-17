@@ -24,7 +24,7 @@ from dash.exceptions import PreventUpdate
 from dash import dcc
 
 # SOURCED SCRIPTS
-from definitions import CONNECT_TO_LAMBDA, PORT, COMPILED_DIR, OUTDIR
+from definitions import CONNECT_TO_LAMBDA, PORT, ZARRPATH, s3
 if CONNECT_TO_LAMBDA:
 	from msdlive_utils import get_bytes
 	from io import BytesIO
@@ -212,10 +212,13 @@ def map(year, ssp, tech, subtech, feature, is_ccs, coolingtype, capacity_factor,
 	row = query_df.iloc[0]
 	cols = ['ssp', 'ui_year', 'tech', 'subtype', 'feature', 'is_ccs', 'cooling_type', 'cap_factor']
 	result_string = "_".join(str(row[col]) for col in cols)
-	folder_path = f"../../data/zarr_output/{result_string}"
-	ds = xr.open_zarr(folder_path)
+
+	print(f"{ZARRPATH}/{result_string}")
+	store = s3.get_mapper(f"{ZARRPATH}/{result_string}") # reading from the cloud adds two seconds (hopefully this speeds up)
+	ds = xr.open_zarr(store) # had to remove consolidated=True, but otherwise works 
+	# folder_path = f"{ZARRPATH}/{result_string}"
+	# ds = xr.open_zarr(folder_path)
 	df = ds.to_dataframe() 
-	print(result_string)
 	end = time.time()
 	print(end-start)
 

@@ -29,7 +29,7 @@ cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
 
 # SOURCED SCRIPTS
 from src.utilities import recur_dictify
-from definitions import LAMBDA_TASK_ROOT, CONNECT_TO_LAMBDA, SERVE_LOCALLY, REQUESETS_PATHNAME_PREFIX, METADATA_DIR, OUTDIR
+from definitions import LAMBDA_TASK_ROOT, CONNECT_TO_LAMBDA, SERVE_LOCALLY, REQUESETS_PATHNAME_PREFIX, METADATA_DIR
 
 # PATHS
 tech_pathways_df = pd.read_csv(os.path.join(METADATA_DIR, "msdlive_tech_paths.csv")) 

@@ -2,52 +2,55 @@
 # -*- coding: utf-8 -*-
 
 import os
-
-# DEV: https://gridcerf.dev.msdlive.org/
-# PROD: https://gridcerf.msdlive.org/
+import sys
+import s3fs
 
 # CLIENT (BROWSER) PATHS
+# DEV: https://gridcerf.dev.msdlive.org/
+# PROD: https://gridcerf.msdlive.org/
+CONNECT_TO_LAMBDA = False
 PORT = int(os.environ.get("PORT", 8060))
 REQUESETS_PATHNAME_PREFIX = "/"
 
-CONNECT_TO_LAMBDA = False
+# CONNECT TO PATHS IN REPO
+METADATA_DIR = "./metadata" # in the repo
 
-# FILE PATHS
-# MAPBOX_TOKEN = open("../../mapbox_token.py").read() # mapbox api token
+# CONNECT TO AWS S3
+script_dir = os.path.abspath("../../../") 
+if script_dir not in sys.path:
+    sys.path.insert(0, script_dir)
+from gridcerf_credentials import *
+
+s3 = s3fs.S3FileSystem(
+    anon=False,
+    key=AWS_Access_Key_ID,
+    secret=AWS_Secret_Access_Key
+)
+
+BUCKET_NAME = "gridcerf-dashboard"
+ZARRPATH = os.path.join(BUCKET_NAME, "gridcerf_compiled_zarr") "../../data/zarr_output" # zarr connection
+LAMBDA_TASK_ROOT = ""
+SERVE_LOCALLY = True
 
 if CONNECT_TO_LAMBDA:
 
     print("DEPLOYMENT 18")
 
     SERVE_LOCALLY = False
-    DATASET_ID = "w85m1-f5148" # prod
-    # 1ffea-emt93: MSD-LIVE added dataset id that goes to DEV
-    DATA_DIR = ""
+
+    # AWS lambda 
     LAMBDA_TASK_ROOT = os.getenv('LAMBDA_TASK_ROOT')
     DIR = os.path.join(LAMBDA_TASK_ROOT, "dash_app")
-
+    DATASET_ID = "w85m1-f5148" # prod # 1ffea-emt93: MSD-LIVE added dataset id that goes to DEV
     if LAMBDA_TASK_ROOT is None:
         print(" ********** ", "LAMBDA_TASK_ROOT is None")
-        METADATA_DIR = "./metadata"
-        DATA_DIR = "./data"
     else:
         print("********** LAMBDA_TASK_ROOT is ", os.getenv('LAMBDA_TASK_ROOT'))
-        CERF_DATA_DIR = LAMBDA_TASK_ROOT
-        COMPILED_DIR = os.path.join(CERF_DATA_DIR, "gridcerf/compiled/compiled_technology_layers")
-        METADATA_DIR = os.path.join(DIR, "metadata")
-        DATA_DIR = os.path.join(DIR, "data")
-
-else:
-    CERF_DATA_DIR = "../../data/msdlive-gridcerf"
-    COMPILED_DIR = os.path.join(CERF_DATA_DIR, "gridcerf/compiled/compiled_technology_layers")
-    METADATA_DIR = "./metadata"
-    DATA_DIR = "./data"
-    LAMBDA_TASK_ROOT = ""
-    SERVE_LOCALLY = True
+        raise SystemExit
 
 print("SERVE_LOCALLY is ", SERVE_LOCALLY)
-
-
 OUTDIR = "tmp"
 
 # REMINDER = "It's coors = (lat, lon) and ... LON = COLS = X ... LAT = ROWS = Y"
+# FILE PATHS
+# MAPBOX_TOKEN = open("../../mapbox_token.py").read() # mapbox api token

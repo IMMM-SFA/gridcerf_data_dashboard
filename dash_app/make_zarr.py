@@ -13,7 +13,13 @@ from zarr.storage import FSStore
 import xarray as xr
 import s3fs
 
-# source in credentials
+# global vars
+run_spatial_metadata = False
+run_local = False
+
+# if not run_local:
+
+# source in credentials and connect to s3 bucket
 script_dir = os.path.abspath("../../../") # "../../../git_repositories"
 if script_dir not in sys.path:
     sys.path.insert(0, script_dir)
@@ -35,7 +41,12 @@ try:
 except Exception as e:
     print("Error accessing bucket:", e)
 
-run_spatial_metadata = False
+folder_path = f"{bucket_name}/gridcerf_compiled_zarr"
+files = s3.ls(folder_path)
+print(f"Number of files in {folder_path}: {len(files)}")
+
+raise SystemExit
+
 
 def preprocess_data(TIF_path, is_albers=True):
 
@@ -112,20 +123,22 @@ if os.path.exists(zarr_dir): # remove an old store if it exists:
     import shutil
     shutil.rmtree(zarr_dir)
 
-# Local Run
-# zarr_store = zarr.DirectoryStore(zarr_dir)
-# root = zarr.group(store=zarr_store)
+if run_local:
+    # Local Run
+    zarr_store = zarr.DirectoryStore(zarr_dir)
+    root = zarr.group(store=zarr_store)
 
-# Cloud Run
-# s3_store = S3Store(f"{bucket_name}/gridcerf_compiled_zarr", s3=s3)
-s3_mapper = s3.get_mapper(f"{bucket_name}/gridcerf_compiled_zarr")
-# s3_store = FSStore(f"s3://{bucket_name}/gridcerf_compiled_zarr", s3=s3)
-# s3_store = FSStore(
-#     f"s3://{bucket_name}/gridcerf_compiled_zarr",
-#     storage_options={"key": AWS_Access_Key_ID, "secret": AWS_Secret_Access_Key}
-# )
-# root = zarr.group(store=s3_store, overwrite=True)
-root = zarr.group(store=s3_mapper, overwrite=True)
+else:
+    # Cloud Run
+    # s3_store = S3Store(f"{bucket_name}/gridcerf_compiled_zarr", s3=s3)
+    s3_mapper = s3.get_mapper(f"{bucket_name}/gridcerf_compiled_zarr")
+    # s3_store = FSStore(f"s3://{bucket_name}/gridcerf_compiled_zarr", s3=s3)
+    # s3_store = FSStore(
+    #     f"s3://{bucket_name}/gridcerf_compiled_zarr",
+    #     storage_options={"key": AWS_Access_Key_ID, "secret": AWS_Secret_Access_Key}
+    # )
+    # root = zarr.group(store=s3_store, overwrite=True)
+    root = zarr.group(store=s3_mapper, overwrite=True)
 
 
 # --------------------------------------------------------------------
@@ -165,15 +178,25 @@ for idx, row in metadata_df.iterrows():
     #  Append each file’s data and group metadata into a Zarr store
     # ----------------------------------------------------------------
     group_name = f"{ssp}_{year}_{tech}_{subtech}_{tech_feature}_{is_ccs}_{cooling_type}_{capacity_factor}"
-        
-    ds.to_zarr(
-        # store=zarr_dir,
-        # store=s3_store,
-        store=s3_mapper,
-        group=group_name,
-        mode="a"
-    )
-    
+
+    if run_local: 
+        ds.to_zarr(
+            store=zarr_dir,
+            # store=s3_store,
+            # store=s3_mapper,
+            group=group_name,
+            mode="a"
+        )        
+    else:
+        ds.to_zarr(
+            # store=zarr_dir,
+            # store=s3_store,
+            store=s3_mapper,
+            group=group_name,
+            mode="a"
+        )
+
     print(idx, time.time() - start) #, ds.attrs)
 
-print("Zarr creation complete!")
+print("Zarr creation complete!") # 8,670 files need to be processed
+# NOTE: Could take over 12 days to write to the cloud but copying the data over instead takes 3 hours
