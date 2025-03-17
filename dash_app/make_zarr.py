@@ -2,16 +2,42 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 import rioxarray
 import pandas as pd
 import numpy as np
 import time
 import zarr
+# from zarr.storage import S3Store
+from zarr.storage import FSStore
 import xarray as xr
+import s3fs
+
+# source in credentials
+script_dir = os.path.abspath("../../../") # "../../../git_repositories"
+if script_dir not in sys.path:
+    sys.path.insert(0, script_dir)
+
+from gridcerf_credentials import *
+
+s3 = s3fs.S3FileSystem(
+    anon=False,
+    key=AWS_Access_Key_ID,
+    secret=AWS_Secret_Access_Key
+)
+
+bucket_name = "gridcerf-dashboard"
+
+# list the contents of the bucket root
+try:
+    contents = s3.ls(bucket_name)
+    print("Bucket contents:", contents)
+except Exception as e:
+    print("Error accessing bucket:", e)
+
+run_spatial_metadata = False
 
 def preprocess_data(TIF_path, is_albers=True):
-
-    start = time.time()
 
     # Read the data, make xarray, reformat matrix as df, and melt the df
     xarray = rioxarray.open_rasterio(TIF_path, masked=True)
@@ -44,49 +70,63 @@ def preprocess_data(TIF_path, is_albers=True):
     # Mirror the data over the x-axis (flip) 
     df_melted_feasible["Latitude"] = -df_melted_feasible["Latitude"]
 
-    # Spatial metadata
-    crs = xarray.rio.crs 
-    bbounds = xarray.rio.bounds()
-    min_lon = bbounds[0]
-    min_lat = bbounds[1]
-    max_lon = bbounds[2]
-    max_lat = bbounds[3]
-    bbox = [[min_lat, min_lon],[max_lat, max_lon]]
+    if run_spatial_metadata:
 
-    result = {
-        "source_crs": crs,
-        "units": "m",
-        "bounds": bbounds,
-        "min_lon": min_lon,
-        "min_lat": min_lat,
-        "max_lon": max_lon,
-        "max_lat": max_lat,
-        "bounding_box": bbox
-    }
+        # Spatial metadata
+        crs = xarray.rio.crs 
+        bbounds = xarray.rio.bounds()
+        min_lon = bbounds[0]
+        min_lat = bbounds[1]
+        max_lon = bbounds[2]
+        max_lat = bbounds[3]
+        bbox = [[min_lat, min_lon],[max_lat, max_lon]]
 
-    # print(f"{end-start} seconds to preprocess TIF")
+        result = {
+            "source_crs": crs,
+            "units": "m",
+            "bounds": bbounds,
+            "min_lon": min_lon,
+            "min_lat": min_lat,
+            "max_lon": max_lon,
+            "max_lat": max_lat,
+            "bounding_box": bbox
+        }
 
-    max_lat = df_melted_feasible["Latitude"].max()
-    min_lat = df_melted_feasible["Latitude"].min()
-    max_lon = df_melted_feasible["Longitude"].max()
-    min_lon = df_melted_feasible["Longitude"].min()
+        max_lat = df_melted_feasible["Latitude"].max()
+        min_lat = df_melted_feasible["Latitude"].min()
+        max_lon = df_melted_feasible["Longitude"].max()
+        min_lon = df_melted_feasible["Longitude"].min()
 
-    bbox = [[min_lat, min_lon],[max_lat, max_lon]]
+        bbox = [[min_lat, min_lon],[max_lat, max_lon]]
 
-    # dx = df_melted_feasible[["Latitude", "Longitude"]].astype(np.float32).to_xarray() # DO NOT recommend doing this.
+    # dx = df_melted_feasible[["Latitude", "Longitude"]].astype(np.float32).to_xarray() # DO NOT recommend doing this. B/c loose accuracy. 
     dx = df_melted_feasible[["Latitude", "Longitude"]].to_xarray()
+
     return dx
 
 # --------------------------------------------------------------------
 #  Make Zarr and remove an old store if it exists
 # --------------------------------------------------------------------
-zarr_dir = "../../data/zarr_output2"
+zarr_dir = "../../data/gridcerf_compiled_zarr"
 if os.path.exists(zarr_dir): # remove an old store if it exists:
     import shutil
     shutil.rmtree(zarr_dir)
 
-zarr_store = zarr.DirectoryStore(zarr_dir)
-root = zarr.group(store=zarr_store)
+# Local Run
+# zarr_store = zarr.DirectoryStore(zarr_dir)
+# root = zarr.group(store=zarr_store)
+
+# Cloud Run
+# s3_store = S3Store(f"{bucket_name}/gridcerf_compiled_zarr", s3=s3)
+s3_mapper = s3.get_mapper(f"{bucket_name}/gridcerf_compiled_zarr")
+# s3_store = FSStore(f"s3://{bucket_name}/gridcerf_compiled_zarr", s3=s3)
+# s3_store = FSStore(
+#     f"s3://{bucket_name}/gridcerf_compiled_zarr",
+#     storage_options={"key": AWS_Access_Key_ID, "secret": AWS_Secret_Access_Key}
+# )
+# root = zarr.group(store=s3_store, overwrite=True)
+root = zarr.group(store=s3_mapper, overwrite=True)
+
 
 # --------------------------------------------------------------------
 #  Loop over metdata, run preprocess, attach metdata, and write out
@@ -96,6 +136,9 @@ root_dir = "../../data/msdlive-gridcerf/gridcerf/compiled/compiled_technology_la
 metadata_df = pd.read_csv("metadata/msdlive_tech_paths.csv")
 
 for idx, row in metadata_df.iterrows():
+
+    start = time.time()
+
     tif_path = row["fpath"]
     ssp = row["ssp"]
     tech = row["tech"]
@@ -109,10 +152,6 @@ for idx, row in metadata_df.iterrows():
     TIF_path = os.path.join(root_dir, tif_path)
     ds = preprocess_data(TIF_path=TIF_path)
 
-    # print(ds)
-
-    # raise SystemExit
-
     ds.attrs["ssp"] = str(ssp)
     ds.attrs["tech"] = str(tech)
     ds.attrs["subtech"] = str(subtech)
@@ -122,42 +161,19 @@ for idx, row in metadata_df.iterrows():
     ds.attrs["capacity_factor"] = str(capacity_factor)
     ds.attrs["year"] = str(year)
 
-    print(idx, ds.attrs)
-    # raise SystemExit
-
     # ----------------------------------------------------------------
     #  Append each file’s data and group metadata into a Zarr store
     # ----------------------------------------------------------------
     group_name = f"{ssp}_{year}_{tech}_{subtech}_{tech_feature}_{is_ccs}_{cooling_type}_{capacity_factor}"
-    
-    # TODO: Check what kind of float it is ... could probably be smaller
-    
+        
     ds.to_zarr(
-        store=zarr_dir,
+        # store=zarr_dir,
+        # store=s3_store,
+        store=s3_mapper,
         group=group_name,
         mode="a"
     )
+    
+    print(idx, time.time() - start) #, ds.attrs)
 
 print("Zarr creation complete!")
-
-# Example 
-# base_dir = os.path.join(root_dir, "compiled_technology_layers/ssp2")
-# year = "2020"
-# technology = "biomass"
-# TIF_path = os.path.join(base_dir, year, technology, "gridcerf_biomass_conventional_no-ccs_dry.tif")
-# df_melted_feasible = preprocess_data(TIF_path=TIF_path)
-# df_melted_feasible.to_csv('data/dynamic_layer_data/gridcerf_biomass_conventional_no-ccs_dry.csv', index=False)
-
-# when reading the data 
-# if CONNECT_TO_LAMBDA:
-#     TIF_source = "S3"
-#     TIF_content = get_bytes(DATASET_ID, TIFPATH)  # reading the retrieved file from the S3 bucket  
-#     TIF_stream = BytesIO(TIF_content) # wrap the file content in a BytesIO object for use like a file
-
-
-# Optional: Create an index for searching by energy type, year, etc.
-# energy_index = root.create_dataset("energy_index", shape=(len(metadata_dict),), dtype='S100')
-# for i, (energy_type, meta_list) in enumerate(metadata_dict.items()):
-#     energy_index[i] = energy_type  # Store energy type as index
-
-# print("Conversion to Zarr complete.")

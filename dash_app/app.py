@@ -185,9 +185,9 @@ def show_hide_element(feature, is_ccs, cooling, capacity_factor):
 	# Input('last-btn-pressed', 'children'),
 	# Input(component_id="opacity-btn", component_property="n_clicks"),
 	# Input(component_id="visibility-btn", component_property="n_clicks"),
-	Input('btn-text', 'children'),
+	Input(component_id='btn-text', component_property='children'),
 	Input(component_id="tabnav", component_property="value"),
-	Input('multi-layer-dropdown', 'value')
+	Input(component_id='multi-layer-dropdown', component_property='value')
     ],
 )
 
