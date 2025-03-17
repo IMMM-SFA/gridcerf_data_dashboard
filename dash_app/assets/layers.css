@@ -66,7 +66,6 @@
     border-radius: 0px;
 }
 
-
 #opacity {
     width: 15px; 
     height: 15px;
@@ -78,7 +77,6 @@
     height: 25px;
     background-color: var(--soft--grey);
 }
-
 
 #opacity-btn, #visibility-btn {
     border: none;
@@ -103,29 +101,4 @@
     color: #545454; 
     font-weight: 300;
     padding: 0;
-}
-
-
-#multi-layer-dropdown{
-    max-width: 300px;
-    /* word-wrap: break-word !important;  */
-    /* white-space: normal !important;   */
-}
-#dropdown-container { 
-    max-width: 300px;
-    /* word-wrap: break-word !important; 
-    white-space: normal !important;   */
-}
-
-/* Wrap long text inside dropdown options */
-/* .Select-control .Select-menu-outer .Select-option {
-    word-wrap: break-word !important; 
-    white-space: normal !important; 
-} */
-
-.Select-value-label, .Select-multi-value-wrapper, .Select-menu-outer {
-    word-wrap: break-word;
-    white-space: normal;
-    line-height: 1.2;
-    font-size: 13px;
 }

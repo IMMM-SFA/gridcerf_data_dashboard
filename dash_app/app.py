@@ -13,6 +13,9 @@ import sys
 import yaml
 import time
 
+## data manipulation libraries 
+import xarray as xr
+
 ## web visualization and interactive libraries
 from dash.dependencies import Input, Output, State
 from dash import Dash, html, callback_context
@@ -195,9 +198,7 @@ def map(year, ssp, tech, subtech, feature, is_ccs, coolingtype, capacity_factor,
 		):
 
 	start = time.time()
-	# print(" --------------------------------------------------------------- ")
 	year = str(year)
-	# print([ssp, year, tech, subtech, feature, is_ccs, coolingtype, capacity_factor, year])
 	query_df = tech_pathways_df.query("ui_ssp in @ssp and \
 									   ui_year in @year and \
 									   ui_tech in @tech and \
@@ -207,7 +208,16 @@ def map(year, ssp, tech, subtech, feature, is_ccs, coolingtype, capacity_factor,
 									   ui_cooling_type in @coolingtype and \
 									   ui_capacity_factor in @capacity_factor")
 	fpaths = query_df["fpath"].values # ['ssp5/2025/biomass/gridcerf_biomass_conventional_no-ccs_dry.tif']
-	index = f"{ssp}_{year}_{tech}_{subtech}_{feature}_{is_ccs}_{coolingtype}_{capacity_factor}"
+	# index = f"{ssp}_{year}_{tech}_{subtech}_{feature}_{is_ccs}_{coolingtype}_{capacity_factor}"
+	row = query_df.iloc[0]
+	cols = ['ssp', 'ui_year', 'tech', 'subtype', 'feature', 'is_ccs', 'cooling_type', 'cap_factor']
+	result_string = "_".join(str(row[col]) for col in cols)
+	folder_path = f"../../data/zarr_output/{result_string}"
+	ds = xr.open_zarr(folder_path)
+	df = ds.to_dataframe() 
+	print(result_string)
+	end = time.time()
+	print(end-start)
 
 	if btn_text == "button2": # dark 
 		styling_dict = {"land": [48, 105, 59],
@@ -222,17 +232,10 @@ def map(year, ssp, tech, subtech, feature, is_ccs, coolingtype, capacity_factor,
 	else:
 		print('no btn!')
 
-
 	if ctx.triggered:
-		
-		clicked_id = ctx.triggered[0]['prop_id'].split('.')[0]
-
-		end = time.time()
-		print(end-start) # takes 0.01 seoncds
-		# TODO: TRY CROPPING THE OCEANS SINCE I
-		fig_div = plot_map(index=index, fpaths=fpaths, styling_dict=styling_dict) # takes 2.6 seconds
+		fig_div = plot_map(df_coors_long=df, fpaths=fpaths, styling_dict=styling_dict) # takes 2.6 seconds
 		mapped_time = time.time()
-		print("Plot Map: ", mapped_time-end)
+		print("Plot Map: ", mapped_time-start)
 
 		return fig_div
 
@@ -240,8 +243,6 @@ def map(year, ssp, tech, subtech, feature, is_ccs, coolingtype, capacity_factor,
 		print("don't update!")
 		raise PreventUpdate
 	
-
-
 # -------------------------------------------
 # Map settings and tools.
 # -------------------------------------------
@@ -253,7 +254,7 @@ def map(year, ssp, tech, subtech, feature, is_ccs, coolingtype, capacity_factor,
 )
 def update_mode(value):
 
-	time.sleep(4)
+	time.sleep(1.3)
 
 	if value == "button1":  # When the switch is "True" || LIGHT
 		header_banner =  { # LIGHT
@@ -417,7 +418,7 @@ if CONNECT_TO_LAMBDA:
 	print("Sending app to the get_wsgi_handler ... ")
 else:
 	if __name__ == "__main__":
-		app.run_server(port=PORT, debug=True, use_reloader=True, dev_tools_ui=True,
-						dev_tools_props_check=True, 
-						dev_tools_hot_reload=False,
+		app.run_server(port=PORT, debug=True#, use_reloader=True, dev_tools_ui=True,
+						# dev_tools_props_check=True, 
+						# dev_tools_hot_reload=False,
 						) # disabling hot reloading

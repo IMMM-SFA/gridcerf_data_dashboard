@@ -64,8 +64,6 @@ def preprocess_data(TIF_path, is_albers=True):
         "bounding_box": bbox
     }
 
-    end = time.time()
-
     # print(f"{end-start} seconds to preprocess TIF")
 
     max_lat = df_melted_feasible["Latitude"].max()
@@ -75,14 +73,14 @@ def preprocess_data(TIF_path, is_albers=True):
 
     bbox = [[min_lat, min_lon],[max_lat, max_lon]]
 
+    # dx = df_melted_feasible[["Latitude", "Longitude"]].astype(np.float32).to_xarray() # DO NOT recommend doing this.
     dx = df_melted_feasible[["Latitude", "Longitude"]].to_xarray()
-
     return dx
 
 # --------------------------------------------------------------------
 #  Make Zarr and remove an old store if it exists
 # --------------------------------------------------------------------
-zarr_dir = "../../data/zarr_output"
+zarr_dir = "../../data/zarr_output2"
 if os.path.exists(zarr_dir): # remove an old store if it exists:
     import shutil
     shutil.rmtree(zarr_dir)
@@ -110,6 +108,10 @@ for idx, row in metadata_df.iterrows():
 
     TIF_path = os.path.join(root_dir, tif_path)
     ds = preprocess_data(TIF_path=TIF_path)
+
+    # print(ds)
+
+    # raise SystemExit
 
     ds.attrs["ssp"] = str(ssp)
     ds.attrs["tech"] = str(tech)

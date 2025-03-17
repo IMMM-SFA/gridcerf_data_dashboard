@@ -61,9 +61,6 @@ description_text = """This dashboard presents a high-resolution interface for ex
 
 intro_text = dcc.Markdown('''
 
-		This dashboard presents a high-resolution interface for exploring geospatial power plant
-		siting suitability of renewable and non-renewable power plants in the contiguous United States.
-
 		The GRIDCERF database offers hundreds of individual technological, socioeconomic, and natural 
 		resource constraints as well as dozens of pre-compiled energy generation specific composite 
 		suitability layers. Data is provided in a harmonized data format that can be easily ingested 
