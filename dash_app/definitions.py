@@ -19,11 +19,12 @@ METADATA_DIR = "./metadata" # in the repo
 script_dir = os.path.abspath("../../../") 
 if script_dir not in sys.path:
     sys.path.insert(0, script_dir)
-from gridcerf_credentials import *
+
+# from gridcerf_credentials import *
 
 s3 = s3fs.S3FileSystem(
     anon=False,
-    key=AWS_Access_Key_ID,
+    key=AWS_Access_Key_ID, 
     secret=AWS_Secret_Access_Key
 )
 
@@ -34,7 +35,7 @@ SERVE_LOCALLY = True
 
 if CONNECT_TO_LAMBDA:
 
-    print("DEPLOYMENT 21")
+    print("DEPLOYMENT 22")
 
     SERVE_LOCALLY = False
 
