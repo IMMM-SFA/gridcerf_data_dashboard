@@ -34,7 +34,7 @@ SERVE_LOCALLY = True
 
 if CONNECT_TO_LAMBDA:
 
-    print("DEPLOYMENT 20")
+    print("DEPLOYMENT 21")
 
     SERVE_LOCALLY = False
 
@@ -49,8 +49,6 @@ if CONNECT_TO_LAMBDA:
         raise SystemExit
 
 print("SERVE_LOCALLY is ", SERVE_LOCALLY)
-OUTDIR = "tmp"
-
 # REMINDER = "It's coors = (lat, lon) and ... LON = COLS = X ... LAT = ROWS = Y"
 # FILE PATHS
 # MAPBOX_TOKEN = open("../../mapbox_token.py").read() # mapbox api token

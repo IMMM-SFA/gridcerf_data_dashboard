@@ -35,7 +35,7 @@ import xyzservices.providers as xyz
 # SOURCED SCRIPTS
 from src.reader import open_as_raster
 from layout import cache, list_of_dicts
-from definitions import OUTDIR, CERF_DATA_DIR, LAMBDA_TASK_ROOT, DATA_DIR #, MAPBOX_TOKEN
+from definitions import CERF_DATA_DIR, LAMBDA_TASK_ROOT, DATA_DIR #, MAPBOX_TOKEN
 
 # DATA PATHS
 STATES = os.path.join(DATA_DIR, "us-state-polygons.json") # "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/refs/heads/master/data/geojson/us-states.json"
