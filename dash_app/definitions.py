@@ -8,7 +8,7 @@ import s3fs
 # CLIENT (BROWSER) PATHS
 # DEV: https://gridcerf.dev.msdlive.org/
 # PROD: https://gridcerf.msdlive.org/
-CONNECT_TO_LAMBDA = False
+CONNECT_TO_LAMBDA = True
 PORT = int(os.environ.get("PORT", 8060))
 REQUESETS_PATHNAME_PREFIX = "/"
 
@@ -34,7 +34,7 @@ SERVE_LOCALLY = True
 
 if CONNECT_TO_LAMBDA:
 
-    print("DEPLOYMENT 18")
+    print("DEPLOYMENT 19")
 
     SERVE_LOCALLY = False
 

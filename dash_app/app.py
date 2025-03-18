@@ -421,7 +421,7 @@ if CONNECT_TO_LAMBDA:
 	print("Sending app to the get_wsgi_handler ... ")
 else:
 	if __name__ == "__main__":
-		app.run_server(port=PORT, debug=True#, use_reloader=True, dev_tools_ui=True,
+		app.run_server(port=PORT, debug=False#, use_reloader=True, dev_tools_ui=True,
 						# dev_tools_props_check=True, 
 						# dev_tools_hot_reload=False,
 						) # disabling hot reloading
