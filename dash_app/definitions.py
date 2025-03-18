@@ -28,13 +28,13 @@ s3 = s3fs.S3FileSystem(
 )
 
 BUCKET_NAME = "gridcerf-dashboard"
-ZARRPATH = os.path.join(BUCKET_NAME, "gridcerf_compiled_zarr") "../../data/zarr_output" # zarr connection
+ZARRPATH = os.path.join(BUCKET_NAME, "gridcerf_compiled_zarr") #"../../data/zarr_output" # zarr connection
 LAMBDA_TASK_ROOT = ""
 SERVE_LOCALLY = True
 
 if CONNECT_TO_LAMBDA:
 
-    print("DEPLOYMENT 19")
+    print("DEPLOYMENT 20")
 
     SERVE_LOCALLY = False
 
