@@ -372,6 +372,7 @@ def create_app():
 							   id=tabs[2],
 							   value=tabs[2],
 							   selected_className="active-tab",
+							   disabled=True,
 							   children=[
 							   		html.Br(),
 									html.P("Explore individual layers in the database", className="guidance-text"), 

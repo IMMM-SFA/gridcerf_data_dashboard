@@ -24,8 +24,8 @@ if script_dir not in sys.path:
 
 s3 = s3fs.S3FileSystem(
     anon=False,
-    key=AWS_Access_Key_ID, 
-    secret=AWS_Secret_Access_Key
+    # key=AWS_Access_Key_ID, 
+    # secret=AWS_Secret_Access_Key
 )
 
 BUCKET_NAME = "gridcerf-dashboard"
