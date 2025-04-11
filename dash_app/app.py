@@ -18,7 +18,7 @@ import xarray as xr
 
 ## web visualization and interactive libraries
 from dash.dependencies import Input, Output, State
-from dash import Dash, html, callback_context
+from dash import Dash, html, callback_context, callback
 from dash import ctx
 from dash.exceptions import PreventUpdate
 from dash import dcc
@@ -42,20 +42,20 @@ from layout import intro_text, section_headers, title_text, description_text, fu
 # Right-hand panel.
 # -------------------------------------------
 
-@app.callback(
+@callback(
     Output('subtech-select', 'options'),
     Input('tech-select', 'value'))
 def set_level2_options(tech):
     return [{'label': i, 'value': i} for i in all_options[tech]]
 
-@app.callback(
+@callback(
     Output('subtech-select', 'value'),
     Input('subtech-select', 'options'))
 def set_level2_value(available_options):
     return available_options[0]['value']
 
 
-@app.callback(
+@callback(
     Output('feature-select', 'options'),
     Input('tech-select', 'value'),
     Input('subtech-select', 'value'))
@@ -63,14 +63,14 @@ def set_level2_options(tech, subtech):
     return [{'label': i, 'value': i} for i in all_options[tech][subtech]]
 
 
-@app.callback(
+@callback(
     Output('feature-select', 'value'),
     Input('feature-select', 'options'))
 def set_level2_value(available_options):
     return available_options[0]['value']
 
 
-@app.callback(
+@callback(
     Output('carbon-capture-select', 'options'),
     Input('tech-select', 'value'),
     Input('subtech-select', 'value'),
@@ -78,14 +78,14 @@ def set_level2_value(available_options):
 def set_level2_options(tech, subtech, feature):
     return [{'label': i, 'value': i} for i in all_options[tech][subtech][feature]]
 
-@app.callback(
+@callback(
     Output('carbon-capture-select', 'value'),
     Input('carbon-capture-select', 'options'))
 def set_level2_value(available_options):
     return available_options[0]['value']
 
 
-@app.callback(
+@callback(
     Output('cooling-type-select', 'options'),
     Input('tech-select', 'value'),
     Input('subtech-select', 'value'),
@@ -95,14 +95,14 @@ def set_level2_value(available_options):
 def set_level2_options(tech, subtech, feature, is_ccs):
     return [{'label': i, 'value': i} for i in all_options[tech][subtech][feature][is_ccs]]
 
-@app.callback(
+@callback(
     Output('cooling-type-select', 'value'),
     Input('cooling-type-select', 'options'))
 def set_level2_value(available_options):
     return available_options[0]['value']
 
 
-@app.callback(
+@callback(
     Output('capacity-factor-select', 'options'),
     Input('tech-select', 'value'),
     Input('subtech-select', 'value'),
@@ -116,14 +116,14 @@ def set_level2_options(tech, subtech, feature, is_ccs, cooling_type):
         options = [options]
     return [{'label': i, 'value': i} for i in options]
 
-@app.callback(
+@callback(
     Output('capacity-factor-select', 'value'),
     Input('capacity-factor-select', 'options'))
 def set_level2_value(available_options):
     return available_options[0]['value']
 
 
-@app.callback(
+@callback(
 	[
 	Output(component_id='feature-select-container', component_property='style'),
 	Output(component_id='carbon-capture-select-container', component_property='style'),
@@ -164,7 +164,7 @@ def show_hide_element(feature, is_ccs, cooling, capacity_factor):
 # DeckGL Mapping.
 # -------------------------------------------
 
-@app.callback(
+@callback(
     # [,
 	# #  Output('last-btn-pressed', 'children')
 	#  ],
@@ -250,7 +250,7 @@ def map(year, ssp, tech, subtech, feature, is_ccs, coolingtype, capacity_factor,
 # Map settings and tools.
 # -------------------------------------------
 
-@app.callback(
+@callback(
 	Output('banner', 'style'),
 	Output('page-body', 'style'),
     Input('btn-text', 'children')
@@ -300,7 +300,7 @@ def update_mode(value):
 		return header_banner, page_body
 
 
-@app.callback(
+@callback(
     [
      Output('button1', 'className'),
      Output('button2', 'className'),
@@ -324,7 +324,7 @@ def update_output(n_clicks1, n_clicks2):
 	else:
 		return "button-selected", "button", "button1" # initialize on the sun (check if only falls into here for this case, b/c otherwise could be this 'button', 'button-selected' )
 
-@app.callback(
+@callback(
     [Output(component_id="expandable-box", component_property="style"),
      Output(component_id="expandable-box", component_property="children"),
 	],
@@ -390,7 +390,7 @@ def expand_box(expand_clicks, close_clicks):
 # Older callbacks.
 # -----------------------------------------------------------------------------
 
-# @app.callback(
+# @callback(
 #     Output('adjust-mode', 'color'),
 #     # Output('output', 'children'),
 #     Input('adjust-mode', 'value')
@@ -402,7 +402,7 @@ def expand_box(expand_clicks, close_clicks):
 #         return 'blue'
 
 
-# @app.callback(
+# @callback(
 #     Output("visibility", "src"),
 #     Input("visibility-btn", "n_clicks"),
 # )
