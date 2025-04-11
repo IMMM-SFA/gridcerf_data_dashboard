@@ -20,7 +20,6 @@ def get_wsgi_handler():
     """
     return make_lambda_handler(
         wsgi_app=create_app().server,
-        wsgi_app=app.server,
         binary_support=True,
     )
 
