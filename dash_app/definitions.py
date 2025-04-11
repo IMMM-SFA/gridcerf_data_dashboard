@@ -23,7 +23,7 @@ if script_dir not in sys.path:
 # from gridcerf_credentials import *
 
 s3 = s3fs.S3FileSystem(
-    anon=False,
+    anon=True,
     # key=AWS_Access_Key_ID, 
     # secret=AWS_Secret_Access_Key
 )
@@ -35,7 +35,7 @@ SERVE_LOCALLY = True
 
 if CONNECT_TO_LAMBDA:
 
-    print("DEPLOYMENT 22")
+    print("DEPLOYMENT 23")
 
     SERVE_LOCALLY = False
 
