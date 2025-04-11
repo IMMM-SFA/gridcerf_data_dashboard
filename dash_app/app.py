@@ -31,7 +31,7 @@ if CONNECT_TO_LAMBDA:
 
 from src.reader import open_as_raster
 from src.deckgl2 import plot_map
-from layout import app, tech_pathways_df, src_meta, all_options
+from layout import create_app, tech_pathways_df, src_meta, all_options
 from layout import intro_text, section_headers, title_text, description_text, funding_text, data_text
 
 # -----------------------------------------------------------------------------
@@ -365,7 +365,7 @@ def expand_box(expand_clicks, close_clicks):
 	# closed_btn_css ={"display": "none"}
 	closed_btn_css = [
 						html.Img(id="info-logo", className="svg", 
-		 						  	 src=app.get_asset_url("icons/nav_icons/info.svg"),
+		 						  	 src=create_app().get_asset_url("icons/nav_icons/info.svg"),
 									 style={"width": "30px", 
 									 	    "height": "30px",
 											"margin-left": "5px",
@@ -421,7 +421,8 @@ if CONNECT_TO_LAMBDA:
 	print("Sending app to the get_wsgi_handler ... ")
 else:
 	if __name__ == "__main__":
-		app.run_server(port=PORT, debug=False#, use_reloader=True, dev_tools_ui=True,
-						# dev_tools_props_check=True, 
-						# dev_tools_hot_reload=False,
-						) # disabling hot reloading
+		create_app().run(debug=False)
+		# app.run_server(port=PORT, debug=False#, use_reloader=True, dev_tools_ui=True,
+		# 				# dev_tools_props_check=True, 
+		# 				# dev_tools_hot_reload=False,
+		# 				) # disabling hot reloading
