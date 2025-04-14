@@ -10,6 +10,7 @@
 ## standard libraries
 import os
 import sys
+import logging
 
 ## data manipulation
 import pandas as pd
@@ -27,11 +28,15 @@ from dash import dash_table
 from flask_caching import Cache
 cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
 
+print("before sourced")
 # SOURCED SCRIPTS
 from src.utilities import recur_dictify
 from definitions import LAMBDA_TASK_ROOT, CONNECT_TO_LAMBDA, SERVE_LOCALLY, REQUESETS_PATHNAME_PREFIX, METADATA_DIR
+print("after sourced")
 
-print("Layout file")
+logger = logging.getLogger(__name__)
+
+logger.info("Data paths.")
 
 # PATHS
 tech_pathways_df = pd.read_csv(os.path.join(METADATA_DIR, "msdlive_tech_paths.csv")) 
@@ -114,11 +119,16 @@ select_ids = ["map-select",
                 ]
 
 
+logger.info("Creating create_app ...")
+
+
 def create_app():
     server = Flask(__name__)
     Compress(server)
 
     if CONNECT_TO_LAMBDA:
+
+        logger.info("Initialize the app.")
 
         app = dash.Dash(__name__, assets_folder="assets", 
                         external_stylesheets=[dbc.themes.BOOTSTRAP], 
@@ -132,8 +142,11 @@ def create_app():
                         serve_locally = SERVE_LOCALLY, # must be False for app deployment on AWS lambda
                         server=server,
                         )
+        logger.info("Done initializing the app.")
 
     else:
+
+        logger.info("Initialize the app (local).")
 
         app = dash.Dash(__name__, assets_folder="assets",
                     external_stylesheets=[dbc.themes.BOOTSTRAP], 
@@ -145,7 +158,9 @@ def create_app():
                                {"name": "description", "content": "Geospatial Raster Input Data for Capacity Expansion Regional Feasibility (GRIDCERF). A high-resolution energy mapper."}
                             ],
                         )
-    
+
+        logger.info("Done initializing the app (local).")
+
     cache.init_app(app.server)
     
     app.title = "GRIDCERF | Geospatial Raster Input Data for Capacity Expansion Regional Feasibility"
@@ -153,6 +168,8 @@ def create_app():
     # -----------------------------------------------
     # HTML components.
     # -----------------------------------------------
+
+    logger.info("Creating layout...")
 
     def mode_switch():
         
