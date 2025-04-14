@@ -104,7 +104,7 @@ def plot_static_layers(styling_dict):
                 get_line_width=1000,
             )
     
-    return [land_layer, states_layer, trans_layer]
+    return [land_layer, states_layer]
 
 
 def plot_map(df_coors_long, fpaths, styling_dict):
