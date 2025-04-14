@@ -146,7 +146,8 @@ else:
 # --------------------------------------------------------------------
 
 root_dir = "../../data/msdlive-gridcerf/gridcerf/compiled/compiled_technology_layers"
-metadata_df = pd.read_csv("metadata/msdlive_tech_paths.csv")
+# no dash_app locally
+metadata_df = pd.read_csv("dash_app/metadata/msdlive_tech_paths.csv")
 
 for idx, row in metadata_df.iterrows():
 
