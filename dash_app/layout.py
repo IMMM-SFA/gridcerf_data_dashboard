@@ -28,13 +28,12 @@ from dash import dash_table
 from flask_caching import Cache
 cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
 
-print("before sourced")
 # SOURCED SCRIPTS
 from src.utilities import recur_dictify
 from definitions import LAMBDA_TASK_ROOT, CONNECT_TO_LAMBDA, SERVE_LOCALLY, REQUESETS_PATHNAME_PREFIX, METADATA_DIR
-print("after sourced")
 
 logger = logging.getLogger(__name__)
+logger.setLevel("INFO")
 
 logger.info("Data paths.")
 

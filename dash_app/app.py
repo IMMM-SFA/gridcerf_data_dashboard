@@ -50,6 +50,7 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+logger.setLevel("INFO")
 
 logger.info(f"Logging initialized.")
 
