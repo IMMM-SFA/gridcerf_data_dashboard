@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
 import time
 import json
 import dash_deck
@@ -10,6 +11,7 @@ import pandas as pd
 import numpy as np
 from dash import html
 from src.deck_utilities import *
+from definitions import MAP_DIR
 
 try:
     from pydeck.core.constants import COORDINATE_SYSTEM
@@ -31,10 +33,11 @@ ICON_MAPPING = { "black_square":
                  }
 
 # no dash_app locally
-LAND_NORTHAMERICA = gpd.read_file("dash_app/data/static_layer_data/land.geojson") 
+
+LAND_NORTHAMERICA = gpd.read_file(os.path.join(MAP_DIR, "static_layer_data/land.geojson"))
 # OCEANS = gpd.read_file("data/static_layer_data/oceans.geojson")
-STATES = gpd.read_file("dash_app/data/static_layer_data/states.geojson")
-TRANSMISSION_LINES = gpd.read_file("dash_app/data/static_layer_data/transmission_lines.geojson")
+STATES = gpd.read_file(os.path.join(MAP_DIR, "static_layer_data/states.geojson")) # "dash_app/data/static_layer_data/states.geojson")
+TRANSMISSION_LINES = gpd.read_file(os.path.join(MAP_DIR, "static_layer_data/transmission_lines.geojson")) # ("dash_app/data/static_layer_data/transmission_lines.geojson")
 
 def plot_static_layers(styling_dict):
 

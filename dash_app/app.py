@@ -24,17 +24,15 @@ from dash import ctx
 from dash.exceptions import PreventUpdate
 from dash import dcc
 
-print("before sourced scripts")
 # SOURCED SCRIPTS
 from definitions import CONNECT_TO_LAMBDA, PORT, ZARRPATH, s3
 if CONNECT_TO_LAMBDA:
 	from msdlive_utils import get_bytes
 	from io import BytesIO
 
-print("before more sourced scripts")
 from src.reader import open_as_raster
 from src.deckgl2 import plot_map
-from layout import create_app, tech_pathways_df, src_meta, all_options
+from layout import app, tech_pathways_df, src_meta, all_options
 from layout import intro_text, section_headers, title_text, description_text, funding_text, data_text
 
 # -------------------------------
@@ -62,21 +60,21 @@ logger.info(f"Logging initialized.")
 # Right-hand panel.
 # -------------------------------------------
 
-@callback(
+@app.callback(
     Output('subtech-select', 'options'),
     Input('tech-select', 'value'))
 def set_level2_options(tech):
 	logger.info(f"Tech clicked. Input value: {tech}")
 	return [{'label': i, 'value': i} for i in all_options[tech]]
 
-@callback(
+@app.callback(
     Output('subtech-select', 'value'),
     Input('subtech-select', 'options'))
 def set_level2_value(available_options):
     return available_options[0]['value']
 
 
-@callback(
+@app.callback(
     Output('feature-select', 'options'),
     Input('tech-select', 'value'),
     Input('subtech-select', 'value'))
@@ -85,14 +83,14 @@ def set_level2_options(tech, subtech):
 	return [{'label': i, 'value': i} for i in all_options[tech][subtech]]
 
 
-@callback(
+@app.callback(
     Output('feature-select', 'value'),
     Input('feature-select', 'options'))
 def set_level2_value(available_options):
     return available_options[0]['value']
 
 
-@callback(
+@app.callback(
     Output('carbon-capture-select', 'options'),
     Input('tech-select', 'value'),
     Input('subtech-select', 'value'),
@@ -101,14 +99,14 @@ def set_level2_options(tech, subtech, feature):
 	logger.info(f"Feature clicked. Input value: {feature}")
 	return [{'label': i, 'value': i} for i in all_options[tech][subtech][feature]]
 
-@callback(
+@app.callback(
     Output('carbon-capture-select', 'value'),
     Input('carbon-capture-select', 'options'))
 def set_level2_value(available_options):
     return available_options[0]['value']
 
 
-@callback(
+@app.callback(
     Output('cooling-type-select', 'options'),
     Input('tech-select', 'value'),
     Input('subtech-select', 'value'),
@@ -119,14 +117,14 @@ def set_level2_options(tech, subtech, feature, is_ccs):
 	logger.info(f"CCS clicked. Input value: {is_ccs}")
 	return [{'label': i, 'value': i} for i in all_options[tech][subtech][feature][is_ccs]]
 
-@callback(
+@app.callback(
     Output('cooling-type-select', 'value'),
     Input('cooling-type-select', 'options'))
 def set_level2_value(available_options):
     return available_options[0]['value']
 
 
-@callback(
+@app.callback(
     Output('capacity-factor-select', 'options'),
     Input('tech-select', 'value'),
     Input('subtech-select', 'value'),
@@ -141,14 +139,14 @@ def set_level2_options(tech, subtech, feature, is_ccs, cooling_type):
 		options = [options]
 	return [{'label': i, 'value': i} for i in options]
 
-@callback(
+@app.callback(
     Output('capacity-factor-select', 'value'),
     Input('capacity-factor-select', 'options'))
 def set_level2_value(available_options):
     return available_options[0]['value']
 
 
-@callback(
+@app.callback(
 	[
 	Output(component_id='feature-select-container', component_property='style'),
 	Output(component_id='carbon-capture-select-container', component_property='style'),
@@ -191,7 +189,7 @@ def show_hide_element(feature, is_ccs, cooling, capacity_factor):
 # DeckGL Mapping.
 # -------------------------------------------
 
-@callback(
+@app.callback(
     # [,
 	# #  Output('last-btn-pressed', 'children')
 	#  ],
@@ -280,7 +278,7 @@ def map(year, ssp, tech, subtech, feature, is_ccs, coolingtype, capacity_factor,
 # Map settings and tools.
 # -------------------------------------------
 
-@callback(
+@app.callback(
 	Output('banner', 'style'),
 	Output('page-body', 'style'),
     Input('btn-text', 'children')
@@ -330,7 +328,7 @@ def update_mode(value):
 		return header_banner, page_body
 
 
-@callback(
+@app.callback(
     [
      Output('button1', 'className'),
      Output('button2', 'className'),
@@ -354,7 +352,7 @@ def update_output(n_clicks1, n_clicks2):
 	else:
 		return "button-selected", "button", "button1" # initialize on the sun (check if only falls into here for this case, b/c otherwise could be this 'button', 'button-selected' )
 
-@callback(
+@app.callback(
     [Output(component_id="expandable-box", component_property="style"),
      Output(component_id="expandable-box", component_property="children"),
 	],
@@ -420,7 +418,7 @@ def expand_box(expand_clicks, close_clicks):
 # Older callbacks.
 # -----------------------------------------------------------------------------
 
-# @callback(
+# @app.callback(
 #     Output('adjust-mode', 'color'),
 #     # Output('output', 'children'),
 #     Input('adjust-mode', 'value')
@@ -432,7 +430,7 @@ def expand_box(expand_clicks, close_clicks):
 #         return 'blue'
 
 
-# @callback(
+# @app.callback(
 #     Output("visibility", "src"),
 #     Input("visibility-btn", "n_clicks"),
 # )
@@ -451,8 +449,8 @@ if CONNECT_TO_LAMBDA:
 	print("Sending app to the get_wsgi_handler ... ")
 else:
 	if __name__ == "__main__":
-		create_app().run(debug=False)
-		# app.run_server(port=PORT, debug=False#, use_reloader=True, dev_tools_ui=True,
-		# 				# dev_tools_props_check=True,
-		# 				# dev_tools_hot_reload=False,
-		# 				) # disabling hot reloading
+		# create_app().run(debug=False)
+		app.run(port=PORT, debug=False#, use_reloader=True, dev_tools_ui=True,
+						# dev_tools_props_check=True,
+						# dev_tools_hot_reload=False,
+						) # disabling hot reloading

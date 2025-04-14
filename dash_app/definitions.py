@@ -15,6 +15,7 @@ REQUESETS_PATHNAME_PREFIX = "/"
 
 # CONNECT TO PATHS IN REPO
 METADATA_DIR = "./metadata" # in the repo
+MAP_DIR = "data"
 
 # CONNECT TO AWS S3
 script_dir = os.path.abspath("../../../") 
@@ -36,12 +37,13 @@ SERVE_LOCALLY = False
 
 if CONNECT_TO_LAMBDA:
 
-    print("DEPLOYMENT 31")
+    print("DEPLOYMENT 32")
 
     SERVE_LOCALLY = False
 
     # AWS lambda 
     METADATA_DIR = "./dash_app/metadata" # in the repo
+    MAP_DIR = "dash_app/data"
     LAMBDA_TASK_ROOT = os.getenv('LAMBDA_TASK_ROOT', "")
     DIR = os.path.join(LAMBDA_TASK_ROOT, "dash_app")
     DATASET_ID = "w85m1-f5148" # prod # 1ffea-emt93: MSD-LIVE added dataset id that goes to DEV

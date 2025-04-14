@@ -695,4 +695,9 @@ def create_app():
                             ],
                         )
 
+
+    logger.info("Completed the layout.")
+
     return app
+
+app = create_app()

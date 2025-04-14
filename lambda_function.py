@@ -8,20 +8,25 @@ from apig_wsgi import make_lambda_handler
 
 # SOURCED SCRIPT
 # from dash_app.test_app import create_app
-# from dash_app.app import app
-from dash_app.layout import create_app
+from dash_app.app import app
+# from dash_app.layout import create_app
 
 @lru_cache(maxsize=5)
 def build_handler(url_prefix: str) -> "Dash":
 
     # If there's no prefix, it's a custom domain
     if url_prefix is None or url_prefix == "":
-        return make_lambda_handler(wsgi_app=create_app().server, binary_support=True)
+        # return make_lambda_handler(wsgi_app=create_app().server, binary_support=True)
+        return make_lambda_handler(wsgi_app=app.server, binary_support=True)
 
     # If there's a prefix we're dealing with an API gateway stage
     # and need to return the appropriate urls.
+    # return make_lambda_handler(
+    #     wsgi_app=create_app({"url_base_pathname": url_prefix}).server,
+    #     binary_support=True,
+    # )
     return make_lambda_handler(
-        wsgi_app=create_app({"url_base_pathname": url_prefix}).server,
+        wsgi_app=app.server,
         binary_support=True,
     )
 
