@@ -47,3 +47,6 @@ def lambda_handler(
     response = handle_event(event, context)
     return response
 
+
+if __name__ == "__main__":
+    create_app().run(debug=False)

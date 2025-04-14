@@ -9,7 +9,7 @@ import geopandas as gpd
 import pandas as pd
 import numpy as np
 from dash import html
-from src.deck_utilities import *
+from .deck_utilities import *
 
 try:
     from pydeck.core.constants import COORDINATE_SYSTEM
@@ -30,10 +30,10 @@ ICON_MAPPING = { "black_square":
                  "width": 242, "height": 242, "anchorX": 121, "anchorY": 121 } 
                  }
 
-LAND_NORTHAMERICA = gpd.read_file("data/static_layer_data/land.geojson")
+LAND_NORTHAMERICA = gpd.read_file("dash_app/data/static_layer_data/land.geojson")
 # OCEANS = gpd.read_file("data/static_layer_data/oceans.geojson")
-STATES = gpd.read_file("data/static_layer_data/states.geojson")
-TRANSMISSION_LINES = gpd.read_file("data/static_layer_data/transmission_lines.geojson")
+STATES = gpd.read_file("dash_app/data/static_layer_data/states.geojson")
+TRANSMISSION_LINES = gpd.read_file("dash_app/data/static_layer_data/transmission_lines.geojson")
 
 def plot_static_layers(styling_dict):
 

@@ -33,13 +33,11 @@ cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
 from .src.utilities import recur_dictify
 from .definitions import CONNECT_TO_LAMBDA, ZARRPATH, s3, SERVE_LOCALLY, REQUESETS_PATHNAME_PREFIX, METADATA_DIR
 
-from src.deckgl2 import plot_map
-from .layout import create_app, tech_pathways_df, src_meta, all_options
-from .layout import intro_text, section_headers, title_text, description_text, funding_text, data_text
+from .src.deckgl2 import plot_map
 
 # PATHS
-tech_pathways_df = pd.read_csv(os.path.join(METADATA_DIR, "msdlive_tech_paths.csv")) 
-src_meta = pd.read_csv(os.path.join(METADATA_DIR, "metadata_ab_edits.csv")) ## sourced
+tech_pathways_df = pd.read_csv("dash_app/metadata/msdlive_tech_paths.csv") 
+src_meta = pd.read_csv("dash_app/metadata/metadata_ab_edits.csv") ## sourced
 src_meta_df = src_meta[["plain_language_layer_name", "source_tag_id", "source_data_title"]]
 
 tech_pathways_df = tech_pathways_df.fillna('--')
@@ -49,7 +47,7 @@ pathway = ["ui_tech", "ui_subtype", "ui_feature", "ui_is_ccs", "ui_cooling_type"
 tech_pathways_dict = recur_dictify(df=tech_pathways_df[pathway])
 all_options = tech_pathways_dict ## sourced
 
-layer_catalogue = pd.read_csv(os.path.join(METADATA_DIR, "layer_catalogue.csv"))
+layer_catalogue = pd.read_csv("dash_app/metadata/layer_catalogue.csv")
 
 layer_catalogue.rename(columns={'filename': 'label', 'filepath': 'value'}, inplace=True)
 list_of_dicts = layer_catalogue[['label', 'value']].to_dict(orient='records')
@@ -1037,7 +1035,3 @@ def expand_box(expand_clicks, close_clicks):
 		return expanded_box_css, expanded_btn_css
 
 	return expanded_box_css, expanded_btn_css # Default state: expanded
-
-
-if __name__ == "__main__":
-    create_app().run(debug=False)
