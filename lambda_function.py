@@ -46,7 +46,3 @@ def lambda_handler(
     handle_event = build_handler(get_url_prefix(event))
     response = handle_event(event, context)
     return response
-
-
-# if __name__ == "__main__":
-#     create_app().run(debug=False)
