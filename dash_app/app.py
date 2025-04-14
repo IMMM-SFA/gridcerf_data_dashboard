@@ -218,7 +218,9 @@ def map(year, ssp, tech, subtech, feature, is_ccs, coolingtype, capacity_factor,
 		tab_id, layer_catalogue
 		):
 
-	start = time.time()
+	logger.info(f"Map callback initiated.")
+
+	# start = time.time()
 	year = str(year)
 	query_df = tech_pathways_df.query("ui_ssp in @ssp and \
 									   ui_year in @year and \
@@ -233,15 +235,16 @@ def map(year, ssp, tech, subtech, feature, is_ccs, coolingtype, capacity_factor,
 	row = query_df.iloc[0]
 	cols = ['ssp', 'ui_year', 'tech', 'subtype', 'feature', 'is_ccs', 'cooling_type', 'cap_factor']
 	result_string = "_".join(str(row[col]) for col in cols)
-
-	print(f"{ZARRPATH}/{result_string}")
+	
+	logger.info(f"Zarr path. {ZARRPATH}/{result_string}")
 	store = s3.get_mapper(f"{ZARRPATH}/{result_string}") # reading from the cloud adds two seconds (hopefully this speeds up)
+	logger.info(f"Read in zarr data. {store}")
 	ds = xr.open_zarr(store) # had to remove consolidated=True, but otherwise works
 	# folder_path = f"{ZARRPATH}/{result_string}"
 	# ds = xr.open_zarr(folder_path)
 	df = ds.to_dataframe()
-	end = time.time()
-	print(end-start)
+	# end = time.time()
+	# print(end-start)
 
 	if btn_text == "button2": # dark
 		styling_dict = {"land": [48, 105, 59],
@@ -259,7 +262,7 @@ def map(year, ssp, tech, subtech, feature, is_ccs, coolingtype, capacity_factor,
 	if ctx.triggered:
 		fig_div = plot_map(df_coors_long=df, fpaths=fpaths, styling_dict=styling_dict) # takes 2.6 seconds
 		mapped_time = time.time()
-		print("Plot Map: ", mapped_time-start)
+		logger.info(f"Map created.")
 
 		return fig_div
 
