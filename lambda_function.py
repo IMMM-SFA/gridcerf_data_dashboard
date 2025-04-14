@@ -12,23 +12,38 @@ from apig_wsgi import make_lambda_handler
 from test_app import create_app
 
 @lru_cache(maxsize=5)
-def get_wsgi_handler():
-    """Wrap this method in an lru_cache so if the lambda container is reused, the handler
-    doesn't have to be recreated.
+def build_handler(url_prefix: str) -> "Dash":
 
-    Returns:
-        _type_: lambda handler that is wsgi compatible and backed by the Dash application
-    """
+    # If there's no prefix, it's a custom domain
+    if url_prefix is None or url_prefix == "":
+        return make_lambda_handler(wsgi_app=create_app().server, binary_support=True)
+
+    # If there's a prefix we're dealing with an API gateway stage
+    # and need to return the appropriate urls.
     return make_lambda_handler(
-        wsgi_app=create_app().server,
+        wsgi_app=create_app({"url_base_pathname": url_prefix}).server,
         binary_support=True,
     )
 
 
-def lambda_handler(event: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
-    # print("Received request:", json.dumps(event))
-    handle_event = get_wsgi_handler()
+def get_raw_path(apigw_event: dict) -> str:
+    return apigw_event.get("requestContext", {}).get("path", apigw_event["path"])
+
+
+def get_url_prefix(apigw_event: dict) -> str:
+    apigw_stage_name = apigw_event["requestContext"]["stage"]
+    prefix = f"/{apigw_stage_name}/"
+    raw_path = get_raw_path(apigw_event)
+    if raw_path.startswith(prefix):
+        return prefix
+    return ""
+
+
+def lambda_handler(
+    event: dict[str, "Any"], context: dict[str, "Any"]
+) -> dict[str, "Any"]:
+    event["path"] = get_raw_path(event)
+    handle_event = build_handler(get_url_prefix(event))
     response = handle_event(event, context)
-    # response_size = sys.getsizeof(json.dumps(response))
-    # print("Response body size:", response_size, "bytes")
     return response
+
