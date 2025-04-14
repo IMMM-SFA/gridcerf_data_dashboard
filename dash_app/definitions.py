@@ -8,8 +8,8 @@ import s3fs
 # CLIENT (BROWSER) PATHS
 # DEV: https://gridcerf.dev.msdlive.org/
 # PROD: https://gridcerf.msdlive.org/
-# CONNECT_TO_LAMBDA = True
-CONNECT_TO_LAMBDA = False
+CONNECT_TO_LAMBDA = True
+# CONNECT_TO_LAMBDA = False
 PORT = int(os.environ.get("PORT", 8060))
 REQUESETS_PATHNAME_PREFIX = "/"
 
