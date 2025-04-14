@@ -30,12 +30,12 @@ from flask_caching import Cache
 cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
 
 # SOURCED SCRIPTS
-from .src.utilities import recur_dictify
-from .definitions import CONNECT_TO_LAMBDA, ZARRPATH, s3, SERVE_LOCALLY, REQUESETS_PATHNAME_PREFIX, METADATA_DIR
+from src.utilities import recur_dictify
+from definitions import CONNECT_TO_LAMBDA, ZARRPATH, s3, SERVE_LOCALLY, REQUESETS_PATHNAME_PREFIX, METADATA_DIR
 
 from src.deckgl2 import plot_map
-from .layout import create_app, tech_pathways_df, src_meta, all_options
-from .layout import intro_text, section_headers, title_text, description_text, funding_text, data_text
+from layout import create_app, tech_pathways_df, src_meta, all_options
+from layout import intro_text, section_headers, title_text, description_text, funding_text, data_text
 
 # PATHS
 tech_pathways_df = pd.read_csv(os.path.join(METADATA_DIR, "msdlive_tech_paths.csv")) 

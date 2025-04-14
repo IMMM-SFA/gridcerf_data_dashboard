@@ -12,6 +12,7 @@ import os
 import sys
 import yaml
 import time
+import logging
 
 ## data manipulation libraries
 import xarray as xr
@@ -24,16 +25,29 @@ from dash.exceptions import PreventUpdate
 from dash import dcc
 
 # SOURCED SCRIPTS
-from .definitions import CONNECT_TO_LAMBDA, PORT, ZARRPATH, s3
+from definitions import CONNECT_TO_LAMBDA, PORT, ZARRPATH, s3
 if CONNECT_TO_LAMBDA:
-	from .msdlive_utils import get_bytes
+	from msdlive_utils import get_bytes
 	from io import BytesIO
 
 from src.reader import open_as_raster
 from src.deckgl2 import plot_map
-from .layout import create_app, tech_pathways_df, src_meta, all_options
-from .layout import intro_text, section_headers, title_text, description_text, funding_text, data_text
+from layout import create_app, tech_pathways_df, src_meta, all_options
+from layout import intro_text, section_headers, title_text, description_text, funding_text, data_text
 
+# -------------------------------
+# Logging Configuration
+# -------------------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s | %(levelname)s | %(message)s',
+    handlers=[
+        # logging.FileHandler("app.log"),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Define dash app callbacks.
 # -----------------------------------------------------------------------------
@@ -46,7 +60,8 @@ from .layout import intro_text, section_headers, title_text, description_text, f
     Output('subtech-select', 'options'),
     Input('tech-select', 'value'))
 def set_level2_options(tech):
-    return [{'label': i, 'value': i} for i in all_options[tech]]
+	logger.info(f"Tech clicked. Input value: {tech}")
+	return [{'label': i, 'value': i} for i in all_options[tech]]
 
 @callback(
     Output('subtech-select', 'value'),
@@ -60,7 +75,8 @@ def set_level2_value(available_options):
     Input('tech-select', 'value'),
     Input('subtech-select', 'value'))
 def set_level2_options(tech, subtech):
-    return [{'label': i, 'value': i} for i in all_options[tech][subtech]]
+	logger.info(f"Subtech clicked. Input value: {subtech}")
+	return [{'label': i, 'value': i} for i in all_options[tech][subtech]]
 
 
 @callback(
@@ -76,7 +92,8 @@ def set_level2_value(available_options):
     Input('subtech-select', 'value'),
     Input('feature-select', 'value'))
 def set_level2_options(tech, subtech, feature):
-    return [{'label': i, 'value': i} for i in all_options[tech][subtech][feature]]
+	logger.info(f"Feature clicked. Input value: {feature}")
+	return [{'label': i, 'value': i} for i in all_options[tech][subtech][feature]]
 
 @callback(
     Output('carbon-capture-select', 'value'),
@@ -93,7 +110,8 @@ def set_level2_value(available_options):
     Input('carbon-capture-select', 'value'),
     )
 def set_level2_options(tech, subtech, feature, is_ccs):
-    return [{'label': i, 'value': i} for i in all_options[tech][subtech][feature][is_ccs]]
+	logger.info(f"CCS clicked. Input value: {is_ccs}")
+	return [{'label': i, 'value': i} for i in all_options[tech][subtech][feature][is_ccs]]
 
 @callback(
     Output('cooling-type-select', 'value'),
@@ -111,10 +129,11 @@ def set_level2_value(available_options):
     Input('cooling-type-select', 'value'),
     )
 def set_level2_options(tech, subtech, feature, is_ccs, cooling_type):
-    options = all_options[tech][subtech][feature][is_ccs][cooling_type]
-    if isinstance(options, str):
-        options = [options]
-    return [{'label': i, 'value': i} for i in options]
+	logger.info(f"Cooling type clicked. Input value: {cooling_type}")
+	options = all_options[tech][subtech][feature][is_ccs][cooling_type]
+	if isinstance(options, str):
+		options = [options]
+	return [{'label': i, 'value': i} for i in options]
 
 @callback(
     Output('capacity-factor-select', 'value'),
@@ -139,6 +158,8 @@ def set_level2_value(available_options):
 	)
 
 def show_hide_element(feature, is_ccs, cooling, capacity_factor):
+
+	logger.info(f"Capacity factor clicked. Input value: {capacity_factor}")
 
 	feature_show = {'display': 'block'}
 	is_css_show = {'display': 'block'}

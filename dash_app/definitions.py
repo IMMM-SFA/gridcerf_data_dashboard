@@ -31,11 +31,11 @@ s3 = s3fs.S3FileSystem(
 BUCKET_NAME = "gridcerf-dashboard"
 ZARRPATH = os.path.join(BUCKET_NAME, "gridcerf_compiled_zarr") #"../../data/zarr_output" # zarr connection
 LAMBDA_TASK_ROOT = ""
-SERVE_LOCALLY = True
+SERVE_LOCALLY = False
 
 if CONNECT_TO_LAMBDA:
 
-    print("DEPLOYMENT 25")
+    print("DEPLOYMENT 26")
 
     SERVE_LOCALLY = False
 
@@ -45,9 +45,9 @@ if CONNECT_TO_LAMBDA:
     DATASET_ID = "w85m1-f5148" # prod # 1ffea-emt93: MSD-LIVE added dataset id that goes to DEV
     if LAMBDA_TASK_ROOT is None:
         print(" ********** ", "LAMBDA_TASK_ROOT is None")
+        raise SystemExit
     else:
         print("********** LAMBDA_TASK_ROOT is ", os.getenv('LAMBDA_TASK_ROOT'))
-        raise SystemExit
 
 print("SERVE_LOCALLY is ", SERVE_LOCALLY)
 # REMINDER = "It's coors = (lat, lon) and ... LON = COLS = X ... LAT = ROWS = Y"
