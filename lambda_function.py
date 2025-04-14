@@ -4,11 +4,12 @@ import sys
 from functools import lru_cache
 from apig_wsgi import make_lambda_handler
 
-# LOGS at https://msdlive-gridcerfapp-logs.s3.amazonaws.com/ 
+# LOGS at https://msdlive-gridcerfapp-logs.s3.amazonaws.com/
 
 # SOURCED SCRIPT
-from dash_app.app import app
-from dash_app.layout import create_app
+# from dash_app.app import app
+# from dash_app.layout import create_app
+from test_app import create_app
 
 @lru_cache(maxsize=5)
 def get_wsgi_handler():
