@@ -27,6 +27,7 @@ COPY overwritten_apig_wsgi.py /var/lang/lib/python3.10/site-packages/apig_wsgi/_
 # Copy application code.  If you have additional folders or files that are outside of
 # the dash_app/ directory, you can copy them here.
 COPY dash_app dash_app
+COPY test_app test_app
 
 # Copy lambda function
 COPY lambda_function.py .
