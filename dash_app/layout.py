@@ -31,6 +31,8 @@ cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
 from src.utilities import recur_dictify
 from definitions import LAMBDA_TASK_ROOT, CONNECT_TO_LAMBDA, SERVE_LOCALLY, REQUESETS_PATHNAME_PREFIX, METADATA_DIR
 
+print("Layout file")
+
 # PATHS
 tech_pathways_df = pd.read_csv(os.path.join(METADATA_DIR, "msdlive_tech_paths.csv")) 
 src_meta = pd.read_csv(os.path.join(METADATA_DIR, "metadata_ab_edits.csv")) ## sourced

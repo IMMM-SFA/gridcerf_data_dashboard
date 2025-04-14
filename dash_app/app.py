@@ -24,12 +24,14 @@ from dash import ctx
 from dash.exceptions import PreventUpdate
 from dash import dcc
 
+print("before sourced scripts")
 # SOURCED SCRIPTS
 from definitions import CONNECT_TO_LAMBDA, PORT, ZARRPATH, s3
 if CONNECT_TO_LAMBDA:
 	from msdlive_utils import get_bytes
 	from io import BytesIO
 
+print("before more sourced scripts")
 from src.reader import open_as_raster
 from src.deckgl2 import plot_map
 from layout import create_app, tech_pathways_df, src_meta, all_options
@@ -48,6 +50,9 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+
+logger.info(f"Logging initialized.")
+
 # -----------------------------------------------------------------------------
 # Define dash app callbacks.
 # -----------------------------------------------------------------------------

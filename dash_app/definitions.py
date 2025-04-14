@@ -36,7 +36,7 @@ SERVE_LOCALLY = False
 
 if CONNECT_TO_LAMBDA:
 
-    print("DEPLOYMENT 28")
+    print("DEPLOYMENT 29")
 
     SERVE_LOCALLY = False
 
